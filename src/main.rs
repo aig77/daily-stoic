@@ -1,26 +1,29 @@
+mod db;
 mod models;
 mod routes;
 
-use routes::{
-    quote::create_quote, quote::delete_quote, quote::get_daily_quote, quote::get_quote_by_id,
-    quote::get_random_quote, quote::update_quote, root::root,
-};
-
 use axum::{
     Router,
-    routing::{delete, get, post, put},
+    routing::{get, put},
 };
+use db::QuoteDatabase;
+use routes::{
+    quote::get_daily_quote, quote::get_quote_by_id, quote::get_random_quote, quote::update_quote,
+    root::root,
+};
+use std::sync::{Arc, Mutex};
 
 #[tokio::main]
 async fn main() {
+    let db = Arc::new(Mutex::new(QuoteDatabase::new("database.json")));
+
     let app = Router::new()
         .route("/", get(root))
-        .route("/quote", post(create_quote))
         .route("/quote/{id}", get(get_quote_by_id))
         .route("/quote/{id}", put(update_quote))
-        .route("/quote/{id}", delete(delete_quote))
         .route("/quote/daily", get(get_daily_quote))
-        .route("/quote/random", get(get_random_quote));
+        .route("/quote/random", get(get_random_quote))
+        .with_state(db);
 
     let listener = tokio::net::TcpListener::bind("127.0.0.1:3000")
         .await
@@ -33,10 +36,8 @@ fn print_listener_info(listener: &tokio::net::TcpListener) {
     let routes = vec![
         "🟢 GET     /",
         "",
-        "🔵 POST    /quote",
         "🟢 GET     /quote/{id}",
         "🟡 PUT     /quote/{id}",
-        "🔴 DELETE  /quote/{id}",
         "",
         "🟢 GET     /quote/daily",
         "🟢 GET     /quote/random",
