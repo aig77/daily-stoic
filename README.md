@@ -11,19 +11,41 @@ A Rust-based REST API for accessing quotes from "The Daily Stoic" by Ryan Holida
 - 🦀 Built with Rust for memory safety and performance
 - ⚡ Async runtime powered by Tokio
 
-## Prerequisites
+## Development Setup
 
+### Option 1: Manual Setup
+
+**Required packages:**
 - Rust 2024 edition or later
 - Cargo (comes with Rust)
+- cargo-watch (optional, for auto-reload)
+- rustfmt, clippy, rust-analyzer (recommended)
 
-Or use Nix flakes for reproducible development environment:
+### Option 2: Using Nix (Recommended)
 
+**Required:**
+- [Nix](https://nixos.org/download.html) with flakes enabled
+
+**With Nix only:**
 ```bash
-# Enter development shell
-nix develop
+git clone <repo>
+cd daily-stoic-api-rs
+nix develop --no-pure-eval
+```
 
-# Or with direnv
+**With Nix + direnv (automatic environment):**
+```bash
+git clone <repo>
+cd daily-stoic-api-rs
+echo "use flake . --no-pure-eval" > .envrc
 direnv allow
+```
+
+**Optional - Speed up package downloads:**
+Add to your `~/.config/nix/nix.conf` or `/etc/nix/nix.conf`:
+```
+extra-substituters = https://devenv.cachix.org
+extra-trusted-public-keys = devenv.cachix.org-1:w1cLUi8dv3hnoSPGAuibQv+f9TZLr6cv/Hm9XgU50cw=
 ```
 
 ## Installation
