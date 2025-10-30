@@ -1,4 +1,4 @@
-use crate::models::quote::{DateId, Quote};
+use crate::models::{DateId, Quote};
 use chrono::Local;
 use serde::{Deserialize, Serialize};
 use serde_json;
