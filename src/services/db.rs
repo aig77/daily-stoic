@@ -23,49 +23,48 @@ impl QuoteDatabase {
         }
     }
 
-    pub fn save(&self) {
-        let updated = serde_json::to_string_pretty(&self.quotes).expect("Failed to serialize data");
-        std::fs::write(&self.file_path, updated).expect("Failed to write updates to file");
-        println!("Updates saved");
-    }
+    // pub fn save(&self) {
+    //     let updated = serde_json::to_string_pretty(&self.quotes).expect("Failed to serialize data");
+    //     std::fs::write(&self.file_path, updated).expect("Failed to write updates to file");
+    //     println!("Updates saved");
+    // }
 
-    pub fn create_quote(&mut self, id: &DateId, quote: &Quote) -> Result<(), String> {
-        if self.quotes.contains_key(id) {
-            return Err(format!("Quote already exists"));
-        }
-        self.quotes.insert(id.clone(), quote.clone());
-        self.save();
-        println!("Quote created");
-        Ok(())
-    }
+    // pub fn create_quote(&mut self, id: &DateId, quote: &Quote) -> Result<(), String> {
+    //     if self.quotes.contains_key(id) {
+    //         return Err(format!("Quote already exists"));
+    //     }
+    //     self.quotes.insert(id.clone(), quote.clone());
+    //     self.save();
+    //     println!("Quote created");
+    //     Ok(())
+    // }
 
     pub fn get_quote(&self, id: &DateId) -> Option<&Quote> {
         self.quotes.get(id)
     }
 
-    pub fn update_quote(&mut self, id: &DateId, quote: &Quote) -> Result<(), String> {
-        if self.quotes.contains_key(id) {
-            self.quotes.insert(id.clone(), quote.clone());
-            self.save();
-            println!("Quote updated");
-            Ok(())
-        } else {
-            Err(format!("Quote not found"))
-        }
-    }
+    // pub fn update_quote(&mut self, id: &DateId, quote: &Quote) -> Result<(), String> {
+    //     if self.quotes.contains_key(id) {
+    //         self.quotes.insert(id.clone(), quote.clone());
+    //         self.save();
+    //         println!("Quote updated");
+    //         Ok(())
+    //     } else {
+    //         Err(format!("Quote not found"))
+    //     }
+    // }
 
-    pub fn delete_quote(&mut self, id: &DateId) -> Result<(), String> {
-        if self.quotes.contains_key(id) {
-            self.quotes.remove(id);
-            self.save();
-            println!("Quote deleted");
-            Ok(())
-        } else {
-            Err(format!("Quote not found"))
-        }
-    }
+    // pub fn delete_quote(&mut self, id: &DateId) -> Result<(), String> {
+    //     if self.quotes.contains_key(id) {
+    //         self.quotes.remove(id);
+    //         self.save();
+    //         println!("Quote deleted");
+    //         Ok(())
+    //     } else {
+    //         Err(format!("Quote not found"))
+    //     }
+    // }
 
-    // TODO
     pub fn get_daily_quote(&self) -> Option<&Quote> {
         let today = Local::now().format("%m-%d").to_string();
         let id = DateId::new(&today).ok()?;
@@ -131,42 +130,42 @@ mod tests {
         QuoteDatabase::new("nonexistent_file.json");
     }
 
-    #[test]
-    fn test_create_quote_success() {
-        let test_file = "test_create.json";
-        let empty_data = "{}";
-
-        create_test_db_file(test_file, empty_data);
-
-        let mut db = QuoteDatabase::new(test_file);
-        let id = DateId::new("03-15").unwrap();
-        let quote = create_sample_quote();
-
-        let result = db.create_quote(&id, &quote);
-        assert!(result.is_ok());
-        assert_eq!(db.quotes.len(), 1);
-        assert!(db.quotes.contains_key(&id));
-
-        cleanup_test_file(test_file);
-    }
-
-    #[test]
-    fn test_create_quote_duplicate() {
-        let test_file = "test_duplicate.json";
-        let sample_data = r#"{"03-15": {"date": "2024-03-15", "title": "Existing", "quote": "Existing quote", "quoter": "Author", "explanation": "Explanation"}}"#;
-
-        create_test_db_file(test_file, sample_data);
-
-        let mut db = QuoteDatabase::new(test_file);
-        let id = DateId::new("03-15").unwrap();
-        let quote = create_sample_quote();
-
-        let result = db.create_quote(&id, &quote);
-        assert!(result.is_err());
-        assert_eq!(result.unwrap_err(), "Quote already exists");
-
-        cleanup_test_file(test_file);
-    }
+    // #[test]
+    // fn test_create_quote_success() {
+    //     let test_file = "test_create.json";
+    //     let empty_data = "{}";
+    //
+    //     create_test_db_file(test_file, empty_data);
+    //
+    //     let mut db = QuoteDatabase::new(test_file);
+    //     let id = DateId::new("03-15").unwrap();
+    //     let quote = create_sample_quote();
+    //
+    //     let result = db.create_quote(&id, &quote);
+    //     assert!(result.is_ok());
+    //     assert_eq!(db.quotes.len(), 1);
+    //     assert!(db.quotes.contains_key(&id));
+    //
+    //     cleanup_test_file(test_file);
+    // }
+    //
+    // #[test]
+    // fn test_create_quote_duplicate() {
+    //     let test_file = "test_duplicate.json";
+    //     let sample_data = r#"{"03-15": {"date": "2024-03-15", "title": "Existing", "quote": "Existing quote", "quoter": "Author", "explanation": "Explanation"}}"#;
+    //
+    //     create_test_db_file(test_file, sample_data);
+    //
+    //     let mut db = QuoteDatabase::new(test_file);
+    //     let id = DateId::new("03-15").unwrap();
+    //     let quote = create_sample_quote();
+    //
+    //     let result = db.create_quote(&id, &quote);
+    //     assert!(result.is_err());
+    //     assert_eq!(result.unwrap_err(), "Quote already exists");
+    //
+    //     cleanup_test_file(test_file);
+    // }
 
     #[test]
     fn test_get_quote_existing() {
@@ -203,108 +202,108 @@ mod tests {
         cleanup_test_file(test_file);
     }
 
-    #[test]
-    fn test_update_quote_existing() {
-        let test_file = "test_update.json";
-        let sample_data = r#"{"03-15": {"date": "2024-03-15", "title": "Old Title", "quote": "Old quote", "quoter": "Author", "explanation": "Explanation"}}"#;
+    // #[test]
+    // fn test_update_quote_existing() {
+    //     let test_file = "test_update.json";
+    //     let sample_data = r#"{"03-15": {"date": "2024-03-15", "title": "Old Title", "quote": "Old quote", "quoter": "Author", "explanation": "Explanation"}}"#;
+    //
+    //     create_test_db_file(test_file, sample_data);
+    //
+    //     let mut db = QuoteDatabase::new(test_file);
+    //     let id = DateId::new("03-15").unwrap();
+    //     let updated_quote = Quote {
+    //         date: Some("2024-03-15".to_string()),
+    //         title: Some("New Title".to_string()),
+    //         quote: Some("New quote".to_string()),
+    //         quoter: Some("New Author".to_string()),
+    //         explanation: Some("New explanation".to_string()),
+    //     };
+    //
+    //     let result = db.update_quote(&id, &updated_quote);
+    //     assert!(result.is_ok());
+    //
+    //     let retrieved = db.get_quote(&id).unwrap();
+    //     assert_eq!(retrieved.title, Some("New Title".to_string()));
+    //     assert_eq!(retrieved.quote, Some("New quote".to_string()));
+    //
+    //     cleanup_test_file(test_file);
+    // }
+    //
+    // #[test]
+    // fn test_update_quote_nonexistent() {
+    //     let test_file = "test_update_none.json";
+    //     let empty_data = "{}";
+    //
+    //     create_test_db_file(test_file, empty_data);
+    //
+    //     let mut db = QuoteDatabase::new(test_file);
+    //     let id = DateId::new("03-15").unwrap();
+    //     let quote = create_sample_quote();
+    //
+    //     let result = db.update_quote(&id, &quote);
+    //     assert!(result.is_err());
+    //     assert_eq!(result.unwrap_err(), "Quote not found");
+    //
+    //     cleanup_test_file(test_file);
+    // }
 
-        create_test_db_file(test_file, sample_data);
+    // #[test]
+    // fn test_delete_quote_existing() {
+    //     let test_file = "test_delete.json";
+    //     let sample_data = r#"{"03-15": {"date": "2024-03-15", "title": "Test", "quote": "Test quote", "quoter": "Author", "explanation": "Explanation"}}"#;
+    //
+    //     create_test_db_file(test_file, sample_data);
+    //
+    //     let mut db = QuoteDatabase::new(test_file);
+    //     let id = DateId::new("03-15").unwrap();
+    //
+    //     assert_eq!(db.quotes.len(), 1);
+    //
+    //     let result = db.delete_quote(&id);
+    //     assert!(result.is_ok());
+    //     assert_eq!(db.quotes.len(), 0);
+    //     assert!(!db.quotes.contains_key(&id));
+    //
+    //     cleanup_test_file(test_file);
+    // }
+    //
+    // #[test]
+    // fn test_delete_quote_nonexistent() {
+    //     let test_file = "test_delete_none.json";
+    //     let empty_data = "{}";
+    //
+    //     create_test_db_file(test_file, empty_data);
+    //
+    //     let mut db = QuoteDatabase::new(test_file);
+    //     let id = DateId::new("03-15").unwrap();
+    //
+    //     let result = db.delete_quote(&id);
+    //     assert!(result.is_err());
+    //     assert_eq!(result.unwrap_err(), "Quote not found");
+    //
+    //     cleanup_test_file(test_file);
+    // }
 
-        let mut db = QuoteDatabase::new(test_file);
-        let id = DateId::new("03-15").unwrap();
-        let updated_quote = Quote {
-            date: Some("2024-03-15".to_string()),
-            title: Some("New Title".to_string()),
-            quote: Some("New quote".to_string()),
-            quoter: Some("New Author".to_string()),
-            explanation: Some("New explanation".to_string()),
-        };
-
-        let result = db.update_quote(&id, &updated_quote);
-        assert!(result.is_ok());
-
-        let retrieved = db.get_quote(&id).unwrap();
-        assert_eq!(retrieved.title, Some("New Title".to_string()));
-        assert_eq!(retrieved.quote, Some("New quote".to_string()));
-
-        cleanup_test_file(test_file);
-    }
-
-    #[test]
-    fn test_update_quote_nonexistent() {
-        let test_file = "test_update_none.json";
-        let empty_data = "{}";
-
-        create_test_db_file(test_file, empty_data);
-
-        let mut db = QuoteDatabase::new(test_file);
-        let id = DateId::new("03-15").unwrap();
-        let quote = create_sample_quote();
-
-        let result = db.update_quote(&id, &quote);
-        assert!(result.is_err());
-        assert_eq!(result.unwrap_err(), "Quote not found");
-
-        cleanup_test_file(test_file);
-    }
-
-    #[test]
-    fn test_delete_quote_existing() {
-        let test_file = "test_delete.json";
-        let sample_data = r#"{"03-15": {"date": "2024-03-15", "title": "Test", "quote": "Test quote", "quoter": "Author", "explanation": "Explanation"}}"#;
-
-        create_test_db_file(test_file, sample_data);
-
-        let mut db = QuoteDatabase::new(test_file);
-        let id = DateId::new("03-15").unwrap();
-
-        assert_eq!(db.quotes.len(), 1);
-
-        let result = db.delete_quote(&id);
-        assert!(result.is_ok());
-        assert_eq!(db.quotes.len(), 0);
-        assert!(!db.quotes.contains_key(&id));
-
-        cleanup_test_file(test_file);
-    }
-
-    #[test]
-    fn test_delete_quote_nonexistent() {
-        let test_file = "test_delete_none.json";
-        let empty_data = "{}";
-
-        create_test_db_file(test_file, empty_data);
-
-        let mut db = QuoteDatabase::new(test_file);
-        let id = DateId::new("03-15").unwrap();
-
-        let result = db.delete_quote(&id);
-        assert!(result.is_err());
-        assert_eq!(result.unwrap_err(), "Quote not found");
-
-        cleanup_test_file(test_file);
-    }
-
-    #[test]
-    fn test_save_functionality() {
-        let test_file = "test_save.json";
-        let empty_data = "{}";
-
-        create_test_db_file(test_file, empty_data);
-
-        let mut db = QuoteDatabase::new(test_file);
-        let id = DateId::new("03-15").unwrap();
-        let quote = create_sample_quote();
-
-        db.create_quote(&id, &quote).unwrap();
-
-        // Read the file directly to verify save worked
-        let file_content = fs::read_to_string(test_file).unwrap();
-        assert!(file_content.contains("03-15"));
-        assert!(file_content.contains("This is a test quote"));
-
-        cleanup_test_file(test_file);
-    }
+    // #[test]
+    // fn test_save_functionality() {
+    //     let test_file = "test_save.json";
+    //     let empty_data = "{}";
+    //
+    //     create_test_db_file(test_file, empty_data);
+    //
+    //     let mut db = QuoteDatabase::new(test_file);
+    //     let id = DateId::new("03-15").unwrap();
+    //     let quote = create_sample_quote();
+    //
+    //     db.create_quote(&id, &quote).unwrap();
+    //
+    //     // Read the file directly to verify save worked
+    //     let file_content = fs::read_to_string(test_file).unwrap();
+    //     assert!(file_content.contains("03-15"));
+    //     assert!(file_content.contains("This is a test quote"));
+    //
+    //     cleanup_test_file(test_file);
+    // }
 
     #[test]
     fn test_get_daily_quote_existing() {
