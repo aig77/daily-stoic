@@ -19,10 +19,10 @@
     };
   };
 
-  nixConfig = {
-    extra-trusted-public-keys = "devenv.cachix.org-1:w1cLUi8dv3hnoSPGAuibQv+f9TZLr6cv/Hm9XgU50cw=";
-    extra-substituters = "https://devenv.cachix.org";
-  };
+  # nixConfig = {
+  #   extra-trusted-public-keys = "devenv.cachix.org-1:w1cLUi8dv3hnoSPGAuibQv+f9TZLr6cv/Hm9XgU50cw=";
+  #   extra-substituters = "https://devenv.cachix.org";
+  # };
 
   outputs = inputs@{ flake-parts, devenv-root, ... }:
     flake-parts.lib.mkFlake { inherit inputs; } {
@@ -50,6 +50,7 @@
 
           # https://devenv.sh/reference/options/
           # packages = [ config.packages.default ];
+          packages = with pkgs; [ cargo-watch ];
 
           env = {
             RUST_BACKTRACE = 1;
@@ -58,7 +59,7 @@
           languages.rust = {
             enable = true;
             channel = "stable";
-            components = [ "rustc" "cargo" "clippy" "rustfmt" "rust-analyzer" ];
+            components = [ "rustc" "cargo" "clippy" "rustfmt" "rust-analyzer"  ];
           };
 
           git-hooks.hooks = {
