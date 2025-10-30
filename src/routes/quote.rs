@@ -4,8 +4,8 @@ use axum::{
     http::StatusCode,
 };
 
-use crate::models::quote::{DateId, Quote};
-use crate::services::db::QuoteDatabase;
+use crate::db::QuoteDatabase;
+use crate::models::{DateId, Quote};
 use std::sync::{Arc, Mutex};
 
 type SharedDb = Arc<Mutex<QuoteDatabase>>;
@@ -51,8 +51,8 @@ pub async fn get_random_quote(State(db): State<SharedDb>) -> Result<Json<Quote>,
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::models::quote::Quote;
-    use crate::services::db::QuoteDatabase;
+    use crate::db::QuoteDatabase;
+    use crate::models::Quote;
     use std::fs;
     use std::path::Path;
 

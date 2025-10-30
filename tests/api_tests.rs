@@ -3,7 +3,7 @@ use axum::{
     body::Body,
     http::{Request, StatusCode},
 };
-use daily_stoic_api_rs::services::db::QuoteDatabase;
+use daily_stoic_api_rs::db::QuoteDatabase;
 use http_body_util::BodyExt;
 use serde_json::Value;
 use std::fs;

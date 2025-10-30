@@ -1,16 +1,16 @@
+mod db;
 mod models;
 mod routes;
-mod services;
 
 use axum::{
     Router,
     routing::{get, put},
 };
+use db::QuoteDatabase;
 use routes::{
     quote::get_daily_quote, quote::get_quote_by_id, quote::get_random_quote, quote::update_quote,
     root::root,
 };
-use services::db::QuoteDatabase;
 use std::sync::{Arc, Mutex};
 
 #[tokio::main]
