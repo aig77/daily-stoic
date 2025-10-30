@@ -136,9 +136,11 @@ dependencies = [
  "axum",
  "chrono",
  "fastrand",
+ "http-body-util",
  "serde",
  "serde_json",
  "tokio",
+ "tower",
 ]
 
 [[package]]
