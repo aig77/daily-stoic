@@ -2,7 +2,7 @@ use serde::{Deserialize, Deserializer, Serialize};
 use std::fmt;
 use std::str::FromStr;
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct DateId(String);
 
 #[allow(dead_code)]
@@ -72,9 +72,8 @@ impl<'de> Deserialize<'de> for DateId {
     }
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct Quote {
-    pub id: DateId,
     pub date: Option<String>,
     pub title: Option<String>,
     pub quote: Option<String>,
