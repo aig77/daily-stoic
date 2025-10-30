@@ -54,7 +54,7 @@ async fn test_root_endpoint() {
 
     let body = response.into_body().collect().await.unwrap().to_bytes();
     let body_str = String::from_utf8(body.to_vec()).unwrap();
-    assert!(body_str.contains("Hello, world!"));
+    assert!(body_str.contains("Daily Stoic API"));
 
     cleanup_test_file(test_file);
 }
