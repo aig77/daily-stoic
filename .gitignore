@@ -1,0 +1,9 @@
+.devenv
+.envrc
+.direnv
+
+database.json
+
+# Added by cargo
+
+/target

@@ -1,0 +1,13 @@
+[workspace.lints.rust]
+unsafe_code = "forbid"
+# unused = "allow" # For experimental dev
+
+[package]
+name = "daily-stoic-api-rs"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+axum = "0.8.6"
+serde = { version = "1.0.228", features = ["derive"] }
+tokio = { version = "1.48.0", features = ["full"] }
