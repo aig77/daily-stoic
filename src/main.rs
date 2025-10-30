@@ -20,9 +20,9 @@ async fn main() {
     let app = Router::new()
         .route("/", get(root))
         .route("/quote/{id}", get(get_quote_by_id))
+        .route("/quote/{id}", put(update_quote))
         .route("/quote/daily", get(get_daily_quote))
         .route("/quote/random", get(get_random_quote))
-        .route("/quote/{id}", put(update_quote))
         .with_state(db);
 
     let listener = tokio::net::TcpListener::bind("127.0.0.1:3000")

@@ -10,16 +10,6 @@ use std::sync::{Arc, Mutex};
 
 type SharedDb = Arc<Mutex<QuoteDatabase>>;
 
-// pub async fn create_quote(Path(id): Path<DateId>) -> Json<Quote> {
-//     Json(Quote {
-//         date: None,
-//         title: None,
-//         quote: Some(format!("create quote {}", id)),
-//         quoter: None,
-//         explanation: None,
-//     })
-// }
-
 pub async fn get_quote_by_id(
     State(db): State<SharedDb>,
     Path(id): Path<DateId>,
@@ -41,16 +31,6 @@ pub async fn update_quote(
         .map(|_| StatusCode::OK)
         .map_err(|err| (StatusCode::NOT_FOUND, err))
 }
-
-// pub async fn delete_quote(Path(id): Path<DateId>) -> Json<Quote> {
-//     Json(Quote {
-//         date: None,
-//         title: None,
-//         quote: Some(format!("delete quote {}", id.as_str())),
-//         quoter: None,
-//         explanation: None,
-//     })
-// }
 
 pub async fn get_daily_quote(State(db): State<SharedDb>) -> Result<Json<Quote>, StatusCode> {
     let db = db.lock().unwrap();
