@@ -6,7 +6,8 @@ use axum::{
 
 use crate::db::QuoteDatabase;
 use crate::models::{DateId, Quote};
-use std::sync::{Arc, Mutex};
+use std::sync::Arc;
+use tokio::sync::Mutex;
 
 type SharedDb = Arc<Mutex<QuoteDatabase>>;
 
@@ -14,7 +15,7 @@ pub async fn get_quote_by_id(
     State(db): State<SharedDb>,
     Path(id): Path<DateId>,
 ) -> Result<Json<Quote>, StatusCode> {
-    let db = db.lock().unwrap();
+    let db = db.lock().await;
     db.get_quote(&id)
         .cloned()
         .map(Json)
@@ -26,14 +27,14 @@ pub async fn update_quote(
     Path(id): Path<DateId>,
     Json(quote): Json<Quote>,
 ) -> Result<StatusCode, (StatusCode, String)> {
-    let mut db = db.lock().unwrap();
+    let mut db = db.lock().await;
     db.update_quote(&id, &quote)
         .map(|_| StatusCode::OK)
         .map_err(|err| (StatusCode::NOT_FOUND, err))
 }
 
 pub async fn get_daily_quote(State(db): State<SharedDb>) -> Result<Json<Quote>, StatusCode> {
-    let db = db.lock().unwrap();
+    let db = db.lock().await;
     db.get_daily_quote()
         .cloned()
         .map(Json)
@@ -41,7 +42,7 @@ pub async fn get_daily_quote(State(db): State<SharedDb>) -> Result<Json<Quote>, 
 }
 
 pub async fn get_random_quote(State(db): State<SharedDb>) -> Result<Json<Quote>, StatusCode> {
-    let db = db.lock().unwrap();
+    let db = db.lock().await;
     db.get_random_quote()
         .cloned()
         .map(Json)

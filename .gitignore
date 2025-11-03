@@ -1,9 +1,8 @@
+/target
+
 .devenv
 .envrc
 .direnv
 
+.env
 database.json
-
-# Added by cargo
-
-/target

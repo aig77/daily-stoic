@@ -11,11 +11,17 @@ use routes::{
     quote::get_daily_quote, quote::get_quote_by_id, quote::get_random_quote, quote::update_quote,
     root::root,
 };
-use std::sync::{Arc, Mutex};
+use std::sync::Arc;
+use tokio::sync::Mutex;
 
 #[tokio::main]
 async fn main() {
-    let db = Arc::new(Mutex::new(QuoteDatabase::new("database.json")));
+    dotenvy::dotenv().expect("Failed to load .env file");
+
+    let addr = std::env::var("ADDRESS").unwrap_or_else(|_| "127.0.0.1:3000".to_string());
+    let db_path = std::env::var("DATABASE_PATH").unwrap_or_else(|_| "database.json".to_string());
+
+    let db = Arc::new(Mutex::new(QuoteDatabase::new(&db_path)));
 
     let app = Router::new()
         .route("/", get(root))
@@ -25,11 +31,15 @@ async fn main() {
         .route("/quote/random", get(get_random_quote))
         .with_state(db);
 
-    let listener = tokio::net::TcpListener::bind("127.0.0.1:3000")
+    let listener = tokio::net::TcpListener::bind(&addr)
         .await
-        .unwrap();
+        .expect(&format!("Failed to bind to address {}", addr));
+
     print_listener_info(&listener);
-    axum::serve(listener, app).await.unwrap();
+
+    axum::serve(listener, app)
+        .await
+        .expect("Server failed to run");
 }
 
 fn print_listener_info(listener: &tokio::net::TcpListener) {
@@ -42,7 +52,13 @@ fn print_listener_info(listener: &tokio::net::TcpListener) {
         "🟢 GET     /quote/daily",
         "🟢 GET     /quote/random",
     ];
-    println!("listening on http://{}", listener.local_addr().unwrap());
+
+    let listener_addr = listener
+        .local_addr()
+        .expect("Failed to get listener address");
+
+    println!("listening on http://{}", listener_addr);
+
     for route in routes {
         println!("{route}");
     }
