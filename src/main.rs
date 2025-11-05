@@ -33,7 +33,7 @@ async fn main() {
 
     let listener = tokio::net::TcpListener::bind(&addr)
         .await
-        .expect(&format!("Failed to bind to address {}", addr));
+        .expect("Failed to bind to address {}");
 
     print_listener_info(&listener);
 

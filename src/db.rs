@@ -1,7 +1,6 @@
 use crate::models::{DateId, Quote};
 use chrono::Local;
 use serde::{Deserialize, Serialize};
-use serde_json;
 use std::collections::HashMap;
 use std::path::PathBuf;
 
@@ -40,7 +39,7 @@ impl QuoteDatabase {
             println!("Quote updated");
             Ok(())
         } else {
-            Err(format!("Quote not found"))
+            Err("Quote not found".to_string())
         }
     }
 
