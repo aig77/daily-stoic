@@ -1,8 +1,8 @@
 /target
 
-.devenv
 .envrc
 .direnv
+.pre-commit-config.yaml
 
 .env
 database.json
