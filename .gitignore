@@ -3,6 +3,7 @@
 .envrc
 .direnv
 .pre-commit-config.yaml
+AGENTS.md
 
 .env
 database.json
