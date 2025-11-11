@@ -12,7 +12,8 @@ pub struct QuoteDatabase {
 
 impl QuoteDatabase {
     pub fn new(file_path: &str) -> Self {
-        let raw_db = std::fs::read_to_string(file_path).expect("Failed to read file");
+        let raw_db = std::fs::read_to_string(file_path).expect("Failed to read database file");
+
         let db: HashMap<DateId, Quote> =
             serde_json::from_str(&raw_db).expect("Failed to deserialize file");
         println!("Database created");

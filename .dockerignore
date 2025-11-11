@@ -1,0 +1,30 @@
+# Git
+.git
+.gitignore
+
+# Rust
+target/
+**/*.rs.bk
+
+# Nix
+result/
+flake.lock
+.direnv/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
+.env.local
+
+# Documentation
+README.md
+*.md
+
+# Tests
+tests/
+
+# Other 
+AGENTS.md

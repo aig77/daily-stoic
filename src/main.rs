@@ -16,7 +16,7 @@ use tokio::sync::Mutex;
 
 #[tokio::main]
 async fn main() {
-    dotenvy::dotenv().expect("Failed to load .env file");
+    dotenvy::dotenv().ok();
 
     let addr = std::env::var("ADDRESS").unwrap_or_else(|_| "127.0.0.1:3000".to_string());
     let db_path = std::env::var("DATABASE_PATH").unwrap_or_else(|_| "database.json".to_string());
