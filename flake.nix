@@ -2,17 +2,17 @@
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     flake-parts.url = "github:hercules-ci/flake-parts";
-    naersk.url = "github:nix-community/naersk";
-    # git-hooks.url = "github:cachix/git-hooks.nix";
     rust-overlay = {
       url = "github:oxalica/rust-overlay";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    naersk.url = "github:nix-community/naersk";
+    git-hooks.url = "github:cachix/git-hooks.nix";
   };
 
   outputs = {flake-parts, ...} @ inputs:
     flake-parts.lib.mkFlake {inherit inputs;} {
-      # imports = [inputs.git-hooks.flakeModule];
+      imports = [inputs.git-hooks.flakeModule];
 
       systems = ["x86_64-linux" "aarch64-darwin"];
 
@@ -46,16 +46,16 @@
           '';
         };
 
-        # pre-commit = {
-        #   check.enable = true;
-        #   settings.hooks = {
-        #     rustfmt.enable = true;
-        #     clippy = {
-        #       enable = true;
-        #       settings.offline = false;
-        #     };
-        #   };
-        # };
+        pre-commit = {
+          check.enable = true;
+          settings.hooks = {
+            rustfmt.enable = true;
+            clippy = {
+              enable = true;
+              settings.offline = false;
+            };
+          };
+        };
       };
     };
 }
