@@ -4,13 +4,14 @@ mod routes;
 
 use axum::{
     Router,
-    routing::{get, put},
+    routing::{get, post, put},
 };
 use db::QuoteDatabase;
 use routes::{
     quote::get_daily_quote, quote::get_quote_by_id, quote::get_random_quote, quote::update_quote,
-    root::root,
+    root::root, token::generate_subscription_token,
 };
+use sqlx::sqlite::SqlitePool;
 use std::sync::Arc;
 use tokio::sync::Mutex;
 
@@ -20,8 +21,10 @@ async fn main() {
 
     let addr = std::env::var("ADDRESS").unwrap_or_else(|_| "127.0.0.1:3000".to_string());
     let db_path = std::env::var("DATABASE_PATH").unwrap_or_else(|_| "database.json".to_string());
+    let db_url = std::env::var("DATABASE_URL").expect("Expected env var DATABASE_URL not found");
 
     let db = Arc::new(Mutex::new(QuoteDatabase::new(&db_path)));
+    let pool = SqlitePool::connect_lazy(&db_url).unwrap();
 
     let app = Router::new()
         .route("/", get(root))
@@ -29,7 +32,9 @@ async fn main() {
         .route("/quote/{id}", put(update_quote))
         .route("/quote/daily", get(get_daily_quote))
         .route("/quote/random", get(get_random_quote))
-        .with_state(db);
+        .with_state(db)
+        .route("/admin/token", post(generate_subscription_token))
+        .with_state(pool);
 
     let listener = tokio::net::TcpListener::bind(&addr)
         .await

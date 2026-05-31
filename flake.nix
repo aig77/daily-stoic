@@ -36,6 +36,8 @@
             rustToolchain
             rust-analyzer
             cargo-watch
+            sqlite
+            sqlx-cli
           ];
 
           RUST_BACKTRACE = 1;

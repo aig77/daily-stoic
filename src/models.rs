@@ -1,6 +1,8 @@
+use chrono::{DateTime, Utc};
 use serde::{Deserialize, Deserializer, Serialize};
 use std::fmt;
 use std::str::FromStr;
+use uuid::Uuid;
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct DateId(String);
@@ -79,6 +81,21 @@ pub struct Quote {
     pub quote: Option<String>,
     pub quoter: Option<String>,
     pub explanation: Option<String>,
+}
+
+#[derive(Debug, sqlx::FromRow)]
+pub struct SubscriptionToken {
+    pub id: String,
+    pub created_at: DateTime<Utc>,
+}
+
+impl SubscriptionToken {
+    pub fn new() -> Self {
+        Self {
+            id: Uuid::new_v4().to_string(),
+            created_at: Utc::now(),
+        }
+    }
 }
 
 #[cfg(test)]
