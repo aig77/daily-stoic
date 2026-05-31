@@ -5,4 +5,4 @@
 AGENTS.md
 
 .env
-database.db
+*.db*
