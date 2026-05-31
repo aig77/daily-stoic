@@ -1,0 +1,4 @@
+CREATE TABLE tokens (
+  id TEXT PRIMARY KEY NOT NULL,
+  created_at TEXT NOT NULL
+);
