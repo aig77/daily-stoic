@@ -77,6 +77,8 @@ impl<'de> Deserialize<'de> for DateId {
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Quote {
     pub date: Option<String>,
+    pub month_topic: Option<String>,
+    pub season_topic: Option<String>,
     pub title: Option<String>,
     pub quote: Option<String>,
     pub quoter: Option<String>,
@@ -84,13 +86,13 @@ pub struct Quote {
 }
 
 #[derive(Debug, sqlx::FromRow)]
-pub struct SubscriptionToken {
+pub struct Token {
     pub id: String,
     pub created_at: DateTime<Utc>,
 }
 
-impl SubscriptionToken {
-    pub fn new() -> Self {
+impl Default for Token {
+    fn default() -> Self {
         Self {
             id: Uuid::new_v4().to_string(),
             created_at: Utc::now(),

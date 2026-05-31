@@ -1,4 +1,4 @@
-use crate::models::SubscriptionToken;
+use crate::models::Token;
 use axum::{extract::State, http::StatusCode};
 
 use sqlx::sqlite::SqlitePool;
@@ -7,7 +7,7 @@ pub async fn generate_subscription_token(
     State(pool): State<SqlitePool>,
 ) -> Result<String, StatusCode> {
     for _ in 0..5 {
-        let token = SubscriptionToken::new();
+        let token = Token::default();
         let count = sqlx::query_scalar!("select count(*) from tokens where id = ?1", token.id)
             .fetch_one(&pool)
             .await
