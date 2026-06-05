@@ -1,5 +1,6 @@
-use chrono::{DateTime, Utc};
+use chrono::Utc;
 use serde::{Deserialize, Deserializer, Serialize};
+use sqlx::FromRow;
 use std::fmt;
 use std::str::FromStr;
 use uuid::Uuid;
@@ -74,8 +75,9 @@ impl<'de> Deserialize<'de> for DateId {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone, FromRow)]
 pub struct Quote {
+    pub id: Option<i64>,
     pub date: Option<String>,
     pub month_topic: Option<String>,
     pub season_topic: Option<String>,
@@ -85,17 +87,17 @@ pub struct Quote {
     pub explanation: Option<String>,
 }
 
-#[derive(Debug, sqlx::FromRow)]
+#[derive(Debug, Clone, sqlx::FromRow)]
 pub struct Token {
     pub id: String,
-    pub created_at: DateTime<Utc>,
+    pub created_at: String,
 }
 
 impl Default for Token {
     fn default() -> Self {
         Self {
             id: Uuid::new_v4().to_string(),
-            created_at: Utc::now(),
+            created_at: Utc::now().to_string(),
         }
     }
 }
