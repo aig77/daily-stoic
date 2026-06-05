@@ -1,11 +1,14 @@
+mod config;
 mod db;
 mod models;
 mod routes;
+mod utils;
 
 use axum::{
     Router,
     routing::{get, post, put},
 };
+use config::Config;
 use db::QuoteDatabase;
 use routes::{
     quote::get_daily_quote, quote::get_quote_by_id, quote::get_random_quote, quote::update_quote,
@@ -17,14 +20,10 @@ use tokio::sync::Mutex;
 
 #[tokio::main]
 async fn main() {
-    dotenvy::dotenv().ok();
+    let config = Config::from_env();
 
-    let addr = std::env::var("ADDRESS").unwrap_or_else(|_| "127.0.0.1:3000".to_string());
-    let db_path = std::env::var("DATABASE_PATH").unwrap_or_else(|_| "database.json".to_string());
-    let db_url = std::env::var("DATABASE_URL").expect("Expected env var DATABASE_URL not found");
-
-    let db = Arc::new(Mutex::new(QuoteDatabase::new(&db_path)));
-    let pool = SqlitePool::connect_lazy(&db_url).unwrap();
+    let db = Arc::new(Mutex::new(QuoteDatabase::new(&config.db_path)));
+    let pool = SqlitePool::connect_lazy(&config.db_url).unwrap();
 
     let app = Router::new()
         .route("/", get(root))
@@ -36,35 +35,13 @@ async fn main() {
         .route("/admin/token", post(generate_subscription_token))
         .with_state(pool);
 
-    let listener = tokio::net::TcpListener::bind(&addr)
+    let listener = tokio::net::TcpListener::bind(&config.addr)
         .await
         .expect("Failed to bind to address {}");
 
-    print_listener_info(&listener);
+    utils::print_listener_info(&listener);
 
     axum::serve(listener, app)
         .await
         .expect("Server failed to run");
-}
-
-fn print_listener_info(listener: &tokio::net::TcpListener) {
-    let routes = vec![
-        "🟢 GET     /",
-        "",
-        "🟢 GET     /quote/{id}",
-        "🟡 PUT     /quote/{id}",
-        "",
-        "🟢 GET     /quote/daily",
-        "🟢 GET     /quote/random",
-    ];
-
-    let listener_addr = listener
-        .local_addr()
-        .expect("Failed to get listener address");
-
-    println!("listening on http://{}", listener_addr);
-
-    for route in routes {
-        println!("{route}");
-    }
 }

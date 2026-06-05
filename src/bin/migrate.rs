@@ -1,17 +1,14 @@
-use daily_stoic::models::Quote;
+use daily_stoic::{config::Config, models::Quote};
 use sqlx::sqlite::SqlitePool;
 use std::collections::HashMap;
 
 #[tokio::main]
 async fn main() {
-    dotenvy::dotenv().ok();
-
-    let raw = std::fs::read_to_string("database.json").unwrap();
+    let config = Config::from_env();
+    let raw = std::fs::read_to_string(config.db_path).unwrap();
     let quotes: HashMap<String, Quote> = serde_json::from_str(&raw).unwrap();
 
-    let pool = SqlitePool::connect(&std::env::var("DATABASE_URL").unwrap())
-        .await
-        .unwrap();
+    let pool = SqlitePool::connect(&config.db_url).await.unwrap();
 
     for (date, quote) in quotes {
         sqlx::query!(

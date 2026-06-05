@@ -6,6 +6,7 @@ unsafe_code = "forbid"
 name = "daily-stoic"
 version = "0.1.0"
 edition = "2024"
+default-run = "daily-stoic"
 
 [dependencies]
 axum = "0.8.6"
