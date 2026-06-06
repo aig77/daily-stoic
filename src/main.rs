@@ -21,7 +21,7 @@ use routes::{
 async fn main() {
     let config = Config::from_env();
 
-    let db = Database::new(&config.database_url);
+    let db = Database::new(&config.database_url).await;
 
     let app = Router::new()
         .route("/", get(|| async { Redirect::temporary("/login") }))
@@ -33,7 +33,7 @@ async fn main() {
         .route("/quote/daily", get(get_daily_quote))
         .route("/quote/random", get(get_random_quote))
         .route("/token", post(generate_token))
-        .with_state(db.await);
+        .with_state(db);
 
     let listener = tokio::net::TcpListener::bind(&config.addr)
         .await
