@@ -5,10 +5,10 @@ use std::collections::HashMap;
 #[tokio::main]
 async fn main() {
     let config = Config::from_env();
-    let raw = std::fs::read_to_string(config.db_path).unwrap();
+    let raw = std::fs::read_to_string("database.json").unwrap();
     let quotes: HashMap<String, Quote> = serde_json::from_str(&raw).unwrap();
 
-    let pool = SqlitePool::connect(&config.db_url).await.unwrap();
+    let pool = SqlitePool::connect(&config.database_url).await.unwrap();
 
     for (date, quote) in quotes {
         sqlx::query!(
