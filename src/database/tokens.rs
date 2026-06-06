@@ -11,7 +11,7 @@ impl TokensRepository {
         TokensRepository { pool }
     }
 
-    pub async fn get(&self, id: &String) -> Option<Token> {
+    pub async fn get(&self, id: &str) -> Option<Token> {
         sqlx::query_as!(Token, "SELECT * FROM tokens WHERE id = ?1", id)
             .fetch_optional(&self.pool)
             .await

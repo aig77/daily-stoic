@@ -1,14 +1,17 @@
 mod quotes;
 mod tokens;
+mod users;
 
 use quotes::QuotesRepository;
 use sqlx::sqlite::SqlitePool;
 use tokens::TokensRepository;
+use users::UsersRepository;
 
 #[derive(Clone, Debug)]
 pub struct Database {
     pub quotes: QuotesRepository,
     pub tokens: TokensRepository,
+    pub users: UsersRepository,
 }
 
 impl Database {
@@ -17,6 +20,7 @@ impl Database {
         Database {
             quotes: QuotesRepository::new(pool.clone()),
             tokens: TokensRepository::new(pool.clone()),
+            users: UsersRepository::new(pool.clone()),
         }
     }
 }
