@@ -1,3 +1,4 @@
-pub mod quote;
-pub mod root;
-pub mod token;
+pub mod login;
+pub mod quotes;
+pub mod register;
+pub mod tokens;

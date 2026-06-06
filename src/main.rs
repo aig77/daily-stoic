@@ -5,13 +5,16 @@ mod routes;
 
 use axum::{
     Router,
+    response::Redirect,
     routing::{get, post},
 };
 use config::Config;
 use database::Database;
 use routes::{
-    quote::get_daily_quote, quote::get_quote_by_id, quote::get_random_quote, root::root,
-    token::generate_token,
+    login::{login_page, submit_login},
+    quotes::{get_daily_quote, get_quote_by_id, get_random_quote},
+    register::{register_page, submit_register},
+    tokens::generate_token,
 };
 
 #[tokio::main]
@@ -21,7 +24,11 @@ async fn main() {
     let db = Database::new(&config.database_url);
 
     let app = Router::new()
-        .route("/", get(root))
+        .route("/", get(|| async { Redirect::temporary("/login") }))
+        .route("/login", get(login_page))
+        .route("/login", post(submit_login))
+        .route("/register", get(register_page))
+        .route("/register", post(submit_register))
         .route("/quote/{id}", get(get_quote_by_id))
         .route("/quote/daily", get(get_daily_quote))
         .route("/quote/random", get(get_random_quote))
