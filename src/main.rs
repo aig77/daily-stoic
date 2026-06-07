@@ -1,5 +1,6 @@
 mod config;
 mod database;
+mod middleware;
 mod models;
 mod routes;
 
@@ -10,6 +11,7 @@ use axum::{
 };
 use config::Config;
 use database::Database;
+use middleware::tracing::init_tracing;
 use routes::{
     login::{login_page, submit_login},
     quotes::{get_daily_quote, get_quote_by_id, get_random_quote},
@@ -19,6 +21,8 @@ use routes::{
 
 #[tokio::main]
 async fn main() {
+    init_tracing();
+
     let config = Config::from_env();
 
     let db = Database::new(&config.database_url).await;
