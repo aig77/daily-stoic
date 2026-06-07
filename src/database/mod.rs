@@ -1,7 +1,9 @@
+mod otps;
 mod quotes;
 mod tokens;
 mod users;
 
+use otps::OtpsRepository;
 use quotes::QuotesRepository;
 use sqlx::sqlite::SqlitePool;
 use tokens::TokensRepository;
@@ -12,6 +14,7 @@ pub struct Database {
     pub quotes: QuotesRepository,
     pub tokens: TokensRepository,
     pub users: UsersRepository,
+    pub otps: OtpsRepository,
 }
 
 impl Database {
@@ -21,6 +24,7 @@ impl Database {
             quotes: QuotesRepository::new(pool.clone()),
             tokens: TokensRepository::new(pool.clone()),
             users: UsersRepository::new(pool.clone()),
+            otps: OtpsRepository::new(pool.clone()),
         }
     }
 }
