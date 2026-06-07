@@ -1,5 +1,4 @@
 use crate::models::User;
-use chrono::Utc;
 use sqlx::sqlite::SqlitePool;
 
 #[derive(Clone, Debug)]
@@ -20,10 +19,17 @@ impl UsersRepository {
     }
 
     pub async fn insert(&self, email: &str) {
+        sqlx::query!("INSERT INTO users (email) VALUES (?1)", email,)
+            .execute(&self.pool)
+            .await
+            .unwrap();
+    }
+
+    pub async fn update(&self, emails_enabled: i64, send_time: String) {
         sqlx::query!(
-            "INSERT INTO users (email, created_at) VALUES (?1, ?2)",
-            email,
-            Utc::now().to_string()
+            "UPDATE users SET emails_enabled = ?1, send_time = ?2",
+            emails_enabled,
+            send_time
         )
         .execute(&self.pool)
         .await

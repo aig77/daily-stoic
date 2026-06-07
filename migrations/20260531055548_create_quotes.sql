@@ -1,6 +1,5 @@
 CREATE TABLE quotes (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    date TEXT NOT NULL UNIQUE,
+    date TEXT PRIMARY KEY NOT NULL UNIQUE,
     month_topic TEXT NOT NULL,
     season_topic TEXT NOT NULL,
     title TEXT NOT NULL,

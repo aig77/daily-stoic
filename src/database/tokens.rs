@@ -22,7 +22,7 @@ impl TokensRepository {
         sqlx::query!(
             "INSERT INTO tokens VALUES (?1, ?2)",
             token.id,
-            token.created_at
+            token.expires_at
         )
         .execute(&self.pool)
         .await

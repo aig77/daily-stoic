@@ -5,7 +5,6 @@ use std::str::FromStr;
 
 #[derive(Clone, Debug, Deserialize, Serialize, FromRow)]
 pub struct Quote {
-    pub id: i64,
     pub date: String,
     pub month_topic: String,
     pub season_topic: String,
