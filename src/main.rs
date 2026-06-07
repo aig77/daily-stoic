@@ -13,7 +13,7 @@ use config::Config;
 use database::Database;
 use middleware::tracing::init_tracing;
 use routes::{
-    login::{login_page, submit_login},
+    login::{login_page, submit_login, verify_otp},
     quotes::{get_daily_quote, get_quote_by_id, get_random_quote},
     register::{register_page, submit_register},
     tokens::generate_token,
@@ -31,6 +31,7 @@ async fn main() {
         .route("/", get(|| async { Redirect::temporary("/login") }))
         .route("/login", get(login_page))
         .route("/login", post(submit_login))
+        .route("/verify", post(verify_otp))
         .route("/register", get(register_page))
         .route("/register", post(submit_register))
         .route("/quote/{id}", get(get_quote_by_id))
