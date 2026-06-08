@@ -11,7 +11,7 @@ use axum::{
 };
 use config::Config;
 use database::Database;
-use middleware::tracing::init_tracing;
+use middleware::{init_tracing, sessions::create_session_layer};
 use routes::{
     login::{login_page, resend_otp, submit_login, verify_otp},
     quotes::{get_daily_quote, get_quote_by_id, get_random_quote},
@@ -26,6 +26,7 @@ async fn main() {
     let config = Config::from_env();
 
     let db = Database::new(&config.database_url).await;
+    let session_layer = create_session_layer();
 
     let app = Router::new()
         .route("/", get(|| async { Redirect::temporary("/login") }))
@@ -38,7 +39,8 @@ async fn main() {
         .route("/quote/daily", get(get_daily_quote))
         .route("/quote/random", get(get_random_quote))
         .route("/token", post(generate_token))
-        .with_state(db);
+        .with_state(db)
+        .layer(session_layer);
 
     let listener = tokio::net::TcpListener::bind(&config.addr)
         .await
