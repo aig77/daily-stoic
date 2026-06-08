@@ -25,11 +25,12 @@ impl UsersRepository {
             .unwrap();
     }
 
-    pub async fn update(&self, emails_enabled: i64, send_time: String) {
+    pub async fn update(&self, email: String, emails_enabled: i64, send_time: String) {
         sqlx::query!(
-            "UPDATE users SET emails_enabled = ?1, send_time = ?2",
+            "UPDATE users SET emails_enabled = ?1, send_time = ?2 WHERE email = ?3",
             emails_enabled,
-            send_time
+            send_time,
+            email
         )
         .execute(&self.pool)
         .await

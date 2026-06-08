@@ -67,8 +67,12 @@ pub async fn submit_register(
         .into_response();
     }
 
+    // create new user
     state.db.users.insert(&register.email).await;
+
+    // delete invite
     state.db.invites.delete(&id).await;
+
     Redirect::to("/register/ok").into_response()
 }
 

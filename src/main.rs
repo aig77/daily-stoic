@@ -13,6 +13,7 @@ use daily_stoic::{
         login::{login_page, resend_login_code, submit_login, verify_login_code},
         quotes::{get_daily_quote, get_quote_by_id, get_random_quote},
         register::{register_ok_page, register_page, submit_register},
+        settings::{save_settings, send_daily, send_random, settings_page},
     },
 };
 
@@ -36,6 +37,9 @@ async fn main() {
         .route("/invite", post(generate_invite))
         .route("/register/{id}", get(register_page).post(submit_register))
         .route("/register/ok", get(register_ok_page))
+        .route("/settings", get(settings_page).post(save_settings))
+        .route("/settings/send/daily", post(send_daily))
+        .route("/settings/send/random", post(send_random))
         .route("/quote/{id}", get(get_quote_by_id))
         .route("/quote/daily", get(get_daily_quote))
         .route("/quote/random", get(get_random_quote))

@@ -2,7 +2,11 @@ use crate::AppState;
 use crate::middleware::sessions::{EMAIL_KEY, Session};
 use crate::models::LoginCode;
 
-use axum::{Form, extract::State, response::Html};
+use axum::{
+    Form,
+    extract::State,
+    response::{Html, IntoResponse, Redirect},
+};
 use serde::Deserialize;
 use tracing::info;
 
@@ -66,7 +70,7 @@ pub async fn verify_login_code(
     State(state): State<AppState>,
     session: Session,
     Form(verify): Form<Verify>,
-) -> Html<String> {
+) -> impl IntoResponse {
     if let Some(login_code) = state.db.login_codes.get(&verify.email).await
         && login_code.code == verify.code
         && !login_code.is_expired()
@@ -77,10 +81,8 @@ pub async fn verify_login_code(
         // delete the login code
         state.db.login_codes.delete(&verify.email).await;
 
-        Html(format!(
-            "<h1>Logged in successfully with {}</h1>",
-            &verify.email
-        ))
+        // redirect to user settings
+        Redirect::to("/settings").into_response()
     } else {
         // login code page with resend button
         Html(format!(
@@ -99,6 +101,7 @@ pub async fn verify_login_code(
             "#,
             &verify.email, &verify.email
         ))
+        .into_response()
     }
 }
 
