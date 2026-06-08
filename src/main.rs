@@ -15,7 +15,7 @@ use middleware::tracing::init_tracing;
 use routes::{
     login::{login_page, submit_login, verify_otp},
     quotes::{get_daily_quote, get_quote_by_id, get_random_quote},
-    register::{register_page, submit_register},
+    register::{register_page, registered_page, submit_register},
     tokens::generate_token,
 };
 
@@ -29,11 +29,10 @@ async fn main() {
 
     let app = Router::new()
         .route("/", get(|| async { Redirect::temporary("/login") }))
-        .route("/login", get(login_page))
-        .route("/login", post(submit_login))
+        .route("/login", get(login_page).post(submit_login))
         .route("/verify", post(verify_otp))
-        .route("/register", get(register_page))
-        .route("/register", post(submit_register))
+        .route("/register/{id}", get(register_page).post(submit_register))
+        .route("/registered", get(registered_page))
         .route("/quote/{id}", get(get_quote_by_id))
         .route("/quote/daily", get(get_daily_quote))
         .route("/quote/random", get(get_random_quote))

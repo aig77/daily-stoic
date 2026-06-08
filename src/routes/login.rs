@@ -111,3 +111,4 @@ pub async fn verify_otp(State(db): State<Database>, Form(verify): Form<Verify>) 
         &verify.email
     ))
 }
+
