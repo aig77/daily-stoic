@@ -14,15 +14,18 @@ pub struct Register {
 
 pub async fn register_page(State(state): State<AppState>, Path(id): Path<String>) -> Html<String> {
     let Some(invite) = state.db.invites.get(&id).await else {
+        // invalid page
         return Html("<span>This invite is invalid. Reach out to an admin if you would like to register.</span>".to_string());
     };
 
     if invite.is_expired() {
+        // token expired page
         Html(
             "<span>This invite has expired. Contact an admin if you would like to register.</span>"
                 .to_string(),
         )
     } else {
+        // register page
         Html(format!(
             r#"<h1>Wanna register?</h1>
             <form method="post" action="/register/{}">
@@ -49,6 +52,7 @@ pub async fn submit_register(
     }
 
     if state.db.users.get(&register.email).await.is_some() {
+        // register page with account already exists warning
         return Html(format!(
             r#"
             <h1>Wanna register?</h1>
@@ -65,7 +69,7 @@ pub async fn submit_register(
 
     state.db.users.insert(&register.email).await;
     state.db.invites.delete(&id).await;
-    Redirect::to("/registered").into_response()
+    Redirect::to("/register/ok").into_response()
 }
 
 pub async fn register_ok_page() -> Html<&'static str> {

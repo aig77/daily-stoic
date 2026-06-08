@@ -3,7 +3,7 @@ use sqlx::FromRow;
 use time::{Duration, OffsetDateTime, format_description::well_known::Rfc3339};
 
 const BASE62: &[u8] = b"0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
-const CODE_LEN: usize = 5;
+const CODE_LEN: usize = 8;
 
 #[derive(Debug, Clone, FromRow)]
 pub struct Invite {

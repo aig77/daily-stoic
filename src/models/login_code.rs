@@ -2,7 +2,7 @@ use rust_otp::TOTP;
 use sqlx::FromRow;
 use time::{Duration, OffsetDateTime, format_description::well_known::Rfc3339};
 
-const OTP_DIGITS_COUNT: u32 = 8;
+const OTP_DIGITS_COUNT: u32 = 5;
 
 #[derive(Debug, Clone, FromRow)]
 pub struct LoginCode {

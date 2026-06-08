@@ -30,10 +30,16 @@ pub async fn login_page() -> Html<&'static str> {
 }
 
 pub async fn submit_login(State(state): State<AppState>, Form(login): Form<Login>) -> Html<String> {
+    // check if user email exists
     if state.db.users.get(&login.email).await.is_some() {
+        // delete code in case it exists
+        state.db.login_codes.delete(&login.email).await;
+
+        // create new code
         let login_code = LoginCode::new(&login.email);
         let code = login_code.code.clone();
         state.db.login_codes.insert(login_code).await;
+
         info!("{}", code); // TODO: replace this with sending the email with the code
     } else {
         info!(
@@ -42,9 +48,10 @@ pub async fn submit_login(State(state): State<AppState>, Form(login): Form<Login
         );
     }
 
+    // login code page
     Html(format!(
         r#"
-        <form method="post" action="/verify">
+        <form method="post" action="/login/verify">
             <h1>Enter Code</h1>
             <input type="hidden" name="email" value="{}"/>
             <input type="text" name="code"/>
@@ -55,7 +62,7 @@ pub async fn submit_login(State(state): State<AppState>, Form(login): Form<Login
     ))
 }
 
-pub async fn verify_otp(
+pub async fn verify_login_code(
     State(state): State<AppState>,
     session: Session,
     Form(verify): Form<Verify>,
@@ -64,22 +71,27 @@ pub async fn verify_otp(
         && login_code.code == verify.code
         && !login_code.is_expired()
     {
+        // create session
         session.insert(EMAIL_KEY, &verify.email).await.unwrap();
+
+        // delete the login code
         state.db.login_codes.delete(&verify.email).await;
+
         Html(format!(
             "<h1>Logged in successfully with {}</h1>",
             &verify.email
         ))
     } else {
+        // login code page with resend button
         Html(format!(
             r#"
-            <form method="post" action="/verify">
+            <form method="post" action="/login/verify">
                 <h1>Enter Code</h1>
                 <input type="hidden" name="email" value="{}"/>
                 <input type="text" name="code"/>
                 <button type="submit">Submit</button>
             </form>
-            <form method="post" action="/resend">
+            <form method="post" action="/login/resend">
                 <input type="hidden" name="email" value="{}"/>
                 <span>Invalid or expired code.</span>
                 <button type="submit">Resend</button>
@@ -90,13 +102,18 @@ pub async fn verify_otp(
     }
 }
 
-pub async fn resend_otp(
+pub async fn resend_login_code(
     State(state): State<AppState>,
     Form(login): Form<Login>,
 ) -> Html<&'static str> {
+    // delete the code
     state.db.login_codes.delete(&login.email).await;
+
+    // create a new one
     let new_login_code = LoginCode::new(&login.email);
     state.db.login_codes.insert(new_login_code).await;
+
+    // resend page
     Html(
         r#"
         <span>A new code has been sent.</span>
