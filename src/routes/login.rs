@@ -1,6 +1,6 @@
-use crate::Database;
+use crate::AppState;
 use crate::middleware::sessions::{EMAIL_KEY, Session};
-use crate::models::Otp;
+use crate::models::LoginCode;
 
 use axum::{Form, extract::State, response::Html};
 use serde::Deserialize;
@@ -29,11 +29,11 @@ pub async fn login_page() -> Html<&'static str> {
     )
 }
 
-pub async fn submit_login(State(db): State<Database>, Form(login): Form<Login>) -> Html<String> {
-    if db.users.get(&login.email).await.is_some() {
-        let otp = Otp::new(&login.email);
-        let code = otp.code.clone();
-        db.otps.insert(otp).await;
+pub async fn submit_login(State(state): State<AppState>, Form(login): Form<Login>) -> Html<String> {
+    if state.db.users.get(&login.email).await.is_some() {
+        let login_code = LoginCode::new(&login.email);
+        let code = login_code.code.clone();
+        state.db.login_codes.insert(login_code).await;
         info!("{}", code); // TODO: replace this with sending the email with the code
     } else {
         info!(
@@ -56,16 +56,16 @@ pub async fn submit_login(State(db): State<Database>, Form(login): Form<Login>) 
 }
 
 pub async fn verify_otp(
-    State(db): State<Database>,
-    Form(verify): Form<Verify>,
+    State(state): State<AppState>,
     session: Session,
+    Form(verify): Form<Verify>,
 ) -> Html<String> {
-    if let Some(otp) = db.otps.get(&verify.email).await
-        && otp.code == verify.code
-        && !otp.is_expired()
+    if let Some(login_code) = state.db.login_codes.get(&verify.email).await
+        && login_code.code == verify.code
+        && !login_code.is_expired()
     {
         session.insert(EMAIL_KEY, &verify.email).await.unwrap();
-        db.otps.delete(&verify.email).await;
+        state.db.login_codes.delete(&verify.email).await;
         Html(format!(
             "<h1>Logged in successfully with {}</h1>",
             &verify.email
@@ -91,12 +91,12 @@ pub async fn verify_otp(
 }
 
 pub async fn resend_otp(
-    State(db): State<Database>,
+    State(state): State<AppState>,
     Form(login): Form<Login>,
 ) -> Html<&'static str> {
-    db.otps.delete(&login.email).await;
-    let new_otp = Otp::new(&login.email);
-    db.otps.insert(new_otp).await;
+    state.db.login_codes.delete(&login.email).await;
+    let new_login_code = LoginCode::new(&login.email);
+    state.db.login_codes.insert(new_login_code).await;
     Html(
         r#"
         <span>A new code has been sent.</span>

@@ -5,31 +5,31 @@ use axum::{
 };
 
 use crate::{
-    Database,
+    AppState,
     models::{DateId, Quote},
 };
 
 pub async fn get_quote_by_id(
-    State(db): State<Database>,
+    State(state): State<AppState>,
     Path(id): Path<DateId>,
 ) -> Result<Json<Quote>, StatusCode> {
-    db.quotes
+    state.db.quotes
         .get(id)
         .await
         .map(Json)
         .ok_or(StatusCode::NOT_FOUND)
 }
 
-pub async fn get_daily_quote(State(db): State<Database>) -> Result<Json<Quote>, StatusCode> {
-    db.quotes
+pub async fn get_daily_quote(State(state): State<AppState>) -> Result<Json<Quote>, StatusCode> {
+    state.db.quotes
         .get_daily()
         .await
         .map(Json)
         .ok_or(StatusCode::NOT_FOUND)
 }
 
-pub async fn get_random_quote(State(db): State<Database>) -> Result<Json<Quote>, StatusCode> {
-    db.quotes
+pub async fn get_random_quote(State(state): State<AppState>) -> Result<Json<Quote>, StatusCode> {
+    state.db.quotes
         .get_random()
         .await
         .map(Json)
