@@ -1,7 +1,9 @@
 use crate::Database;
+
 use crate::models::Otp;
 
 use axum::{Form, extract::State, response::Html};
+use chrono::{DateTime, Utc};
 use rust_otp::TOTP;
 use serde::Deserialize;
 use tracing::info;
@@ -70,26 +72,42 @@ pub async fn submit_login(State(db): State<Database>, Form(login): Form<Login>) 
 }
 
 pub async fn verify_otp(State(db): State<Database>, Form(verify): Form<Verify>) -> Html<String> {
-    // TODO: otp expiration time check
-    // in a way that the user isn't informed that they got the right email if they're a bad actor
-    // example, auto resend if they did get it right but it's expired
-    // and update the invalid message to be generic enough that it catches all these cases
-    match db.otps.get(&verify.email).await {
-        Some(otp) if otp.code == verify.code => Html(format!(
-            r#"<h1>Logged in successfully with {}</h1>"#,
-            &verify.email
-        )),
-        _ => Html(format!(
-            r#"
-                <form method="post" action="/verify">
-                    <h1>Enter Code</h1>
-                    <input type="hidden" name="email" value="{}"/>
-                    <input type="text" name="code"/>
-                    <button type="submit">Submit</button>
-                    <span>Invalid code! Try again.</span>
-                </form>
-                "#,
-            &verify.email
-        )),
+    if let Some(otp) = db.otps.get(&verify.email).await {
+        let is_valid_time = Utc::now() < DateTime::parse_from_rfc3339(&otp.expires_at).unwrap();
+        if otp.code == verify.code && is_valid_time {
+            return Html(format!(
+                r#"<h1>Logged in successfully with {}</h1>"#,
+                &verify.email
+            ));
+        } else if otp.code == verify.code && !is_valid_time {
+            // reset code when expired
+            let totp = TOTP::builder()
+                .base32_secret("GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ")
+                .unwrap()
+                .build()
+                .unwrap();
+
+            let new_code = totp.generate_current_formatted_async().await.unwrap();
+
+            let new_otp = Otp::new(&verify.email, &new_code);
+
+            db.otps.delete(&verify.email).await;
+            db.otps.insert(new_otp).await;
+
+            info!("updated {}", new_code);
+        }
     }
+
+    Html(format!(
+        r#"
+            <form method="post" action="/verify">
+                <h1>Enter Code</h1>
+                <input type="hidden" name="email" value="{}"/>
+                <input type="text" name="code"/>
+                <button type="submit">Submit</button>
+                <span>Invalid code! Try again or check for a new code if it expired. Codes expire after 5 minutes.</span>
+            </form>
+            "#,
+        &verify.email
+    ))
 }
