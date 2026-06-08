@@ -1,5 +1,5 @@
 use crate::Database;
-
+use crate::middleware::sessions::{EMAIL_KEY, Session};
 use crate::models::Otp;
 
 use axum::{Form, extract::State, response::Html};
@@ -55,11 +55,17 @@ pub async fn submit_login(State(db): State<Database>, Form(login): Form<Login>) 
     ))
 }
 
-pub async fn verify_otp(State(db): State<Database>, Form(verify): Form<Verify>) -> Html<String> {
+pub async fn verify_otp(
+    State(db): State<Database>,
+    Form(verify): Form<Verify>,
+    session: Session,
+) -> Html<String> {
     if let Some(otp) = db.otps.get(&verify.email).await
         && otp.code == verify.code
         && !otp.is_expired()
     {
+        session.insert(EMAIL_KEY, &verify.email).await.unwrap();
+        db.otps.delete(&verify.email).await;
         Html(format!(
             "<h1>Logged in successfully with {}</h1>",
             &verify.email
@@ -91,7 +97,6 @@ pub async fn resend_otp(
     db.otps.delete(&login.email).await;
     let new_otp = Otp::new(&login.email);
     db.otps.insert(new_otp).await;
-
     Html(
         r#"
         <span>A new code has been sent.</span>
