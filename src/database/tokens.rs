@@ -28,4 +28,11 @@ impl TokensRepository {
         .await
         .unwrap();
     }
+
+    pub async fn delete(&self, id: &str) {
+        sqlx::query!("DELETE FROM tokens WHERE id = ?1", id)
+            .execute(&self.pool)
+            .await
+            .unwrap();
+    }
 }
