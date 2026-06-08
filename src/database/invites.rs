@@ -1,26 +1,26 @@
-use crate::models::Token;
+use crate::models::Invite;
 use sqlx::sqlite::SqlitePool;
 
 #[derive(Clone, Debug)]
-pub struct TokensRepository {
+pub struct InvitesRepository {
     pool: SqlitePool,
 }
 
-impl TokensRepository {
+impl InvitesRepository {
     pub fn new(pool: SqlitePool) -> Self {
-        TokensRepository { pool }
+        InvitesRepository { pool }
     }
 
-    pub async fn get(&self, id: &str) -> Option<Token> {
-        sqlx::query_as!(Token, "SELECT * FROM tokens WHERE id = ?1", id)
+    pub async fn get(&self, id: &str) -> Option<Invite> {
+        sqlx::query_as!(Invite, "SELECT * FROM invites WHERE id = ?1", id)
             .fetch_optional(&self.pool)
             .await
             .unwrap()
     }
 
-    pub async fn insert(&self, token: &Token) {
+    pub async fn insert(&self, token: &Invite) {
         sqlx::query!(
-            "INSERT INTO tokens VALUES (?1, ?2)",
+            "INSERT INTO invites VALUES (?1, ?2)",
             token.id,
             token.expires_at
         )
@@ -30,7 +30,7 @@ impl TokensRepository {
     }
 
     pub async fn delete(&self, id: &str) {
-        sqlx::query!("DELETE FROM tokens WHERE id = ?1", id)
+        sqlx::query!("DELETE FROM invites WHERE id = ?1", id)
             .execute(&self.pool)
             .await
             .unwrap();

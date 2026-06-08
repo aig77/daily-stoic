@@ -1,4 +1,4 @@
-CREATE TABLE tokens (
+CREATE TABLE invites (
   id TEXT PRIMARY KEY NOT NULL UNIQUE,
   expires_at TEXT NOT NULL
 );

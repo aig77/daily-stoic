@@ -1,20 +1,20 @@
-mod otps;
+mod invites;
+mod login_codes;
 mod quotes;
-mod tokens;
 mod users;
 
-use otps::OtpsRepository;
+use invites::InvitesRepository;
+use login_codes::LoginCodesRepository;
 use quotes::QuotesRepository;
 use sqlx::sqlite::SqlitePool;
-use tokens::TokensRepository;
 use users::UsersRepository;
 
 #[derive(Clone, Debug)]
 pub struct Database {
     pub quotes: QuotesRepository,
-    pub tokens: TokensRepository,
+    pub invites: InvitesRepository,
     pub users: UsersRepository,
-    pub otps: OtpsRepository,
+    pub login_codes: LoginCodesRepository,
 }
 
 impl Database {
@@ -22,9 +22,9 @@ impl Database {
         let pool = SqlitePool::connect(database_url).await.unwrap();
         Database {
             quotes: QuotesRepository::new(pool.clone()),
-            tokens: TokensRepository::new(pool.clone()),
+            invites: InvitesRepository::new(pool.clone()),
             users: UsersRepository::new(pool.clone()),
-            otps: OtpsRepository::new(pool.clone()),
+            login_codes: LoginCodesRepository::new(pool.clone()),
         }
     }
 }

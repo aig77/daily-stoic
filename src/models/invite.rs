@@ -6,12 +6,12 @@ const BASE62: &[u8] = b"0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRST
 const CODE_LEN: usize = 5;
 
 #[derive(Debug, Clone, FromRow)]
-pub struct Token {
+pub struct Invite {
     pub id: String,
     pub expires_at: String,
 }
 
-impl Default for Token {
+impl Default for Invite {
     fn default() -> Self {
         let t = OffsetDateTime::now_utc() + Duration::hours(24);
         Self {
@@ -21,7 +21,7 @@ impl Default for Token {
     }
 }
 
-impl Token {
+impl Invite {
     pub fn is_expired(&self) -> bool {
         OffsetDateTime::now_utc() >= OffsetDateTime::parse(&self.expires_at, &Rfc3339).unwrap()
     }

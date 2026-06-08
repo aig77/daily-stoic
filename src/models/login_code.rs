@@ -5,16 +5,16 @@ use time::{Duration, OffsetDateTime, format_description::well_known::Rfc3339};
 const OTP_DIGITS_COUNT: u32 = 8;
 
 #[derive(Debug, Clone, FromRow)]
-pub struct Otp {
+pub struct LoginCode {
     pub email: String,
     pub code: String,
     pub expires_at: String,
 }
 
-impl Otp {
+impl LoginCode {
     pub fn new(email: &str) -> Self {
         let t = OffsetDateTime::now_utc() + Duration::minutes(5);
-        Otp {
+        Self {
             email: email.to_string(),
             code: generate_code(),
             expires_at: t.format(&Rfc3339).unwrap(),
