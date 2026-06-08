@@ -29,4 +29,11 @@ impl OtpsRepository {
         .await
         .unwrap();
     }
+
+    pub async fn delete(&self, email: &str) {
+        sqlx::query!("DELETE FROM otps WHERE email = ?1", email)
+            .execute(&self.pool)
+            .await
+            .unwrap();
+    }
 }
