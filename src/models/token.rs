@@ -1,6 +1,6 @@
-use chrono::{TimeDelta, Utc};
 use rand::RngExt;
 use sqlx::FromRow;
+use time::{Duration, OffsetDateTime, format_description::well_known::Rfc3339};
 
 const BASE62: &[u8] = b"0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
 const CODE_LEN: usize = 5;
@@ -13,11 +13,17 @@ pub struct Token {
 
 impl Default for Token {
     fn default() -> Self {
-        let t = Utc::now() + TimeDelta::hours(24);
+        let t = OffsetDateTime::now_utc() + Duration::hours(24);
         Self {
             id: generate_random_base62_code(CODE_LEN),
-            expires_at: t.to_rfc3339(),
+            expires_at: t.format(&Rfc3339).unwrap(),
         }
+    }
+}
+
+impl Token {
+    pub fn is_expired(&self) -> bool {
+        OffsetDateTime::now_utc() >= OffsetDateTime::parse(&self.expires_at, &Rfc3339).unwrap()
     }
 }
 

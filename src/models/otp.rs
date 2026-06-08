@@ -1,6 +1,6 @@
-use chrono::{TimeDelta, Utc};
 use rust_otp::TOTP;
 use sqlx::FromRow;
+use time::{Duration, OffsetDateTime, format_description::well_known::Rfc3339};
 
 const OTP_DIGITS_COUNT: u32 = 8;
 
@@ -13,12 +13,16 @@ pub struct Otp {
 
 impl Otp {
     pub fn new(email: &str) -> Self {
-        let t = Utc::now() + TimeDelta::minutes(5);
+        let t = OffsetDateTime::now_utc() + Duration::minutes(5);
         Otp {
             email: email.to_string(),
             code: generate_code(),
-            expires_at: t.to_rfc3339(),
+            expires_at: t.format(&Rfc3339).unwrap(),
         }
+    }
+
+    pub fn is_expired(&self) -> bool {
+        OffsetDateTime::now_utc() >= OffsetDateTime::parse(&self.expires_at, &Rfc3339).unwrap()
     }
 }
 

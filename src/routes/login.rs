@@ -3,7 +3,6 @@ use crate::Database;
 use crate::models::Otp;
 
 use axum::{Form, extract::State, response::Html};
-use chrono::{DateTime, Utc};
 use serde::Deserialize;
 use tracing::info;
 
@@ -59,7 +58,7 @@ pub async fn submit_login(State(db): State<Database>, Form(login): Form<Login>) 
 pub async fn verify_otp(State(db): State<Database>, Form(verify): Form<Verify>) -> Html<String> {
     if let Some(otp) = db.otps.get(&verify.email).await
         && otp.code == verify.code
-        && Utc::now() < DateTime::parse_from_rfc3339(&otp.expires_at).unwrap()
+        && !otp.is_expired()
     {
         Html(format!(
             "<h1>Logged in successfully with {}</h1>",

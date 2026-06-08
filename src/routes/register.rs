@@ -5,7 +5,6 @@ use axum::{
     http::StatusCode,
     response::{Html, IntoResponse, Redirect},
 };
-use chrono::{DateTime, Utc};
 use serde::Deserialize;
 
 #[derive(Deserialize)]
@@ -18,9 +17,7 @@ pub async fn register_page(State(db): State<Database>, Path(id): Path<String>) -
         return Html("<span>This token is invalid. Reach out to an admin if you would like to register.</span>".to_string());
     };
 
-    let is_expired = Utc::now() >= DateTime::parse_from_rfc3339(&token.expires_at).unwrap();
-
-    if is_expired {
+    if token.is_expired() {
         Html(
             "<span>This token has expired. Contact an admin if you would like to register.</span>"
                 .to_string(),
@@ -47,9 +44,7 @@ pub async fn submit_register(
         return (StatusCode::NOT_FOUND, Html("Invalid token.")).into_response();
     };
 
-    let is_expired = Utc::now() >= DateTime::parse_from_rfc3339(&token.expires_at).unwrap();
-
-    if is_expired {
+    if token.is_expired() {
         return (StatusCode::BAD_REQUEST, Html("Token expired.")).into_response();
     }
 
