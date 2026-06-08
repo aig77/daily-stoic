@@ -2,7 +2,7 @@ use chrono::{TimeDelta, Utc};
 use rust_otp::TOTP;
 use sqlx::FromRow;
 
-const OTP_DIGITS_COUNT: u32 = 5;
+const OTP_DIGITS_COUNT: u32 = 8;
 
 #[derive(Debug, Clone, FromRow)]
 pub struct Otp {
