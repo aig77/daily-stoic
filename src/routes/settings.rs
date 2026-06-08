@@ -21,6 +21,7 @@ pub async fn settings_page(State(state): State<AppState>, session: Session) -> i
     };
 
     let user = state.db.users.get(&email).await.unwrap();
+
     Html(format!(
         r#"
         <form method="post" action="/settings">

@@ -36,4 +36,11 @@ impl UsersRepository {
         .await
         .unwrap();
     }
+
+    pub async fn grant_admin(&self, email: String) {
+        sqlx::query!("UPDATE users SET is_admin = 1 WHERE email = ?1", email)
+            .execute(&self.pool)
+            .await
+            .unwrap();
+    }
 }
