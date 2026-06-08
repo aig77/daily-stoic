@@ -13,7 +13,7 @@ impl Default for Token {
         let t = Utc::now() + TimeDelta::hours(24);
         Self {
             id: Uuid::new_v4().to_string(),
-            expires_at: t.to_string(),
+            expires_at: t.to_rfc3339(),
         }
     }
 }

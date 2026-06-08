@@ -14,7 +14,7 @@ impl Otp {
         Otp {
             email: email.to_string(),
             code: code.to_string(),
-            expires_at: t.to_string(),
+            expires_at: t.to_rfc3339(),
         }
     }
 }
