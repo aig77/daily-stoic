@@ -1,8 +1,7 @@
-use rust_otp::TOTP;
 use sqlx::FromRow;
 use time::{Duration, OffsetDateTime, format_description::well_known::Rfc3339};
 
-const OTP_DIGITS_COUNT: u32 = 5;
+const CODE_LENGTH: u32 = 5;
 
 #[derive(Debug, Clone, FromRow)]
 pub struct LoginCode {
@@ -26,13 +25,8 @@ impl LoginCode {
     }
 }
 
-pub fn generate_code() -> String {
-    let totp = TOTP::builder()
-        .base32_secret("GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ")
-        .unwrap()
-        .digits(OTP_DIGITS_COUNT)
-        .build()
-        .unwrap();
-
-    totp.generate_current_formatted().unwrap()
+fn generate_code() -> String {
+    let min = 10u32.pow(CODE_LENGTH - 1);
+    let max = 10u32.pow(CODE_LENGTH);
+    (rand::random::<u32>() % (max - min) + min).to_string()
 }
