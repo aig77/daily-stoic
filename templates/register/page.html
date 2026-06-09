@@ -1,8 +1,14 @@
-<h1>Wanna register?</h1>
-<form method="post" action="/register/{{ id }}">
-  <input type="email" name="email" placeholder="Enter your email" />
-  <button type="submit">Register</button>
-  {% if email_taken %}
-    <span>An account with that email already exists</span>
-  {% endif %}
-</form>
+{% extends "base.html" %}
+
+{% block title %}Register{% endblock %}
+
+{% block content %}
+  <h1>Wanna register?</h1>
+  <form method="post" action="/register/{{ id }}">
+    <input type="email" name="email" placeholder="Enter your email" />
+    <button type="submit">Register</button>
+    {% if email_taken %}
+      <span>An account with that email already exists</span>
+    {% endif %}
+  </form>
+{% endblock %}

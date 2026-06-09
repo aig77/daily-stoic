@@ -1,8 +1,14 @@
-<span>This invite is 
-  {% match error %}
-    {% when RegisterError::Invalid %}
-      invalid.
-    {% when RegisterError::Expired %}
-      expired.
-  {% endmatch %}
-Contact an admin if you would like to register.</span>
+{% extends "base.html" %}
+
+{% block title %}Register{% endblock %}
+
+{% block content %}
+  <span>This invite is 
+    {% match error %}
+      {% when RegisterError::Invalid %}
+        invalid.
+      {% when RegisterError::Expired %}
+        expired.
+    {% endmatch %}
+  Contact an admin if you would like to register.</span>
+{% endblock %}
