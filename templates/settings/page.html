@@ -14,4 +14,10 @@
 <form method="post" action="/settings/send/random">
   <button type="submit">Random</button>
 </form>
-
+{% if is_admin %}
+  <form method="post" action="/invite">
+    <button type="submit">Invite</button>
+    {% if let Some(url) = invite_url %}
+      <span>{{ invite_link }}</span>
+    {% endif %}
+  </form>

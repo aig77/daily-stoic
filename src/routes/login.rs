@@ -61,7 +61,7 @@ pub async fn submit_login(State(state): State<AppState>, Form(login): Form<Login
     }
 
     let template = CodeTemplate {
-        email: login.email.clone(),
+        email: login.email,
         show_error: false,
     };
 
