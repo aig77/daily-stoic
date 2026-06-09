@@ -1,6 +1,7 @@
 use crate::AppState;
 use crate::middleware::sessions::{EMAIL_KEY, Session};
 
+use askama::Template;
 use axum::{
     Form,
     extract::State,
@@ -15,6 +16,14 @@ pub struct Settings {
     pub send_time: String,
 }
 
+#[derive(Template)]
+#[template(path = "settings/page.html")]
+struct PageTemplate {
+    email: String,
+    emails_enabled: bool,
+    send_time: String,
+}
+
 pub async fn settings_page(State(state): State<AppState>, session: Session) -> impl IntoResponse {
     let Some(email) = session.get::<String>(EMAIL_KEY).await.unwrap() else {
         return Redirect::to("/login").into_response();
@@ -22,30 +31,13 @@ pub async fn settings_page(State(state): State<AppState>, session: Session) -> i
 
     let user = state.db.users.get(&email).await.unwrap();
 
-    Html(format!(
-        r#"
-        <form method="post" action="/settings">
-            <h1>{}'s settings</h1>
-            <input type="checkbox" name="emails_enabled" {}/>
-            <input type="time" name="send_time" value="{}"/>
-            <button type="submit">Save</button>
-        </form>
-        <form method="post" action="/settings/send/daily">
-            <button type="submit">Daily</button>
-        </form>
-        <form method="post" action="/settings/send/random">
-            <button type="submit">Random</button>
-        </form>
-        "#,
-        &email,
-        if user.emails_enabled == 1 {
-            "checked"
-        } else {
-            ""
-        },
-        user.send_time
-    ))
-    .into_response()
+    let template = PageTemplate {
+        email,
+        emails_enabled: user.emails_enabled == 1,
+        send_time: user.send_time,
+    };
+
+    Html(template.render().unwrap()).into_response()
 }
 
 pub async fn save_settings(

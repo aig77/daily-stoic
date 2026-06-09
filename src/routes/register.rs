@@ -1,8 +1,9 @@
 use crate::AppState;
+
+use askama::Template;
 use axum::{
     Form,
     extract::{Path, State},
-    http::StatusCode,
     response::{Html, IntoResponse, Redirect},
 };
 use serde::Deserialize;
@@ -12,29 +13,50 @@ pub struct Register {
     email: String,
 }
 
+#[derive(Template)]
+#[template(path = "register/page.html")]
+struct PageTemplate {
+    id: String,
+    email_taken: bool,
+}
+
+enum RegisterError {
+    Invalid,
+    Expired,
+}
+
+#[derive(Template)]
+#[template(path = "register/dead_end.html")]
+struct DeadEndTemplate {
+    error: RegisterError,
+}
+
+#[derive(Template)]
+#[template(path = "register/ok.html")]
+struct OkTemplate;
+
 pub async fn register_page(State(state): State<AppState>, Path(id): Path<String>) -> Html<String> {
     let Some(invite) = state.db.invites.get(&id).await else {
         // invalid page
-        return Html("<span>This invite is invalid. Reach out to an admin if you would like to register.</span>".to_string());
+        let invalid_template = DeadEndTemplate {
+            error: RegisterError::Invalid,
+        };
+        return Html(invalid_template.render().unwrap());
     };
 
     if invite.is_expired() {
         // token expired page
-        Html(
-            "<span>This invite has expired. Contact an admin if you would like to register.</span>"
-                .to_string(),
-        )
+        let expired_template = DeadEndTemplate {
+            error: RegisterError::Expired,
+        };
+        Html(expired_template.render().unwrap())
     } else {
         // register page
-        Html(format!(
-            r#"<h1>Wanna register?</h1>
-            <form method="post" action="/register/{}">
-                <input type="email" name="email" placeholder="Enter your email" />
-                <button type="submit">Register</button>
-            </form>
-            "#,
-            &id
-        ))
+        let page_template = PageTemplate {
+            id,
+            email_taken: false,
+        };
+        Html(page_template.render().unwrap())
     }
 }
 
@@ -44,27 +66,26 @@ pub async fn submit_register(
     Form(register): Form<Register>,
 ) -> impl IntoResponse {
     let Some(invite) = state.db.invites.get(&id).await else {
-        return (StatusCode::NOT_FOUND, Html("Invalid invite.")).into_response();
+        let invalid_template = DeadEndTemplate {
+            error: RegisterError::Invalid,
+        };
+        return Html(invalid_template.render().unwrap()).into_response();
     };
 
     if invite.is_expired() {
-        return (StatusCode::BAD_REQUEST, Html("Invite expired.")).into_response();
+        let expired_template = DeadEndTemplate {
+            error: RegisterError::Expired,
+        };
+        return Html(expired_template.render().unwrap()).into_response();
     }
 
     if state.db.users.get(&register.email).await.is_some() {
         // register page with account already exists warning
-        return Html(format!(
-            r#"
-            <h1>Wanna register?</h1>
-            <form method="post" action="/register/{}">
-                <input type="email" name="email" placeholder="Enter your email" />
-                <button type="submit">Register</button>
-                <span>An account with that email already exists</span>
-            </form>
-            "#,
-            &id
-        ))
-        .into_response();
+        let page_error_template = PageTemplate {
+            id: id.clone(),
+            email_taken: true,
+        };
+        return Html(page_error_template.render().unwrap()).into_response();
     }
 
     // create new user
@@ -76,11 +97,6 @@ pub async fn submit_register(
     Redirect::to("/register/ok").into_response()
 }
 
-pub async fn register_ok_page() -> Html<&'static str> {
-    Html(
-        r#"
-        <span>You are registered.</span>
-        <a href="/login">Go to login</a>
-        "#,
-    )
+pub async fn register_ok_page() -> Html<String> {
+    Html(OkTemplate.render().unwrap())
 }

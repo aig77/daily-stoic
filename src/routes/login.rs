@@ -2,6 +2,7 @@ use crate::AppState;
 use crate::middleware::sessions::{EMAIL_KEY, Session};
 use crate::models::LoginCode;
 
+use askama::Template;
 use axum::{
     Form,
     extract::State,
@@ -21,16 +22,23 @@ pub struct Verify {
     code: String,
 }
 
-pub async fn login_page() -> Html<&'static str> {
-    Html(
-        r#"
-        <form method="post" action="/login">
-            <h1>Wanna login?</h1>
-            <input type="email" name="email" placeholder="Enter your email" />
-            <button type="submit">Login</button>
-        </form>
-        "#,
-    )
+#[derive(Template)]
+#[template(path = "login/page.html")]
+struct PageTemplate;
+
+#[derive(Template)]
+#[template(path = "login/code.html")]
+struct CodeTemplate {
+    email: String,
+    show_error: bool,
+}
+
+#[derive(Template)]
+#[template(path = "login/resend_code.html")]
+struct ResendCodeTemplate;
+
+pub async fn login_page() -> Html<String> {
+    Html(PageTemplate.render().unwrap())
 }
 
 pub async fn submit_login(State(state): State<AppState>, Form(login): Form<Login>) -> Html<String> {
@@ -52,18 +60,13 @@ pub async fn submit_login(State(state): State<AppState>, Form(login): Form<Login
         );
     }
 
+    let template = CodeTemplate {
+        email: login.email.clone(),
+        show_error: false,
+    };
+
     // login code page
-    Html(format!(
-        r#"
-        <form method="post" action="/login/verify">
-            <h1>Enter Code</h1>
-            <input type="hidden" name="email" value="{}"/>
-            <input type="text" name="code"/>
-            <button type="submit">Submit</button>
-        </form>
-        "#,
-        &login.email
-    ))
+    Html(template.render().unwrap())
 }
 
 pub async fn verify_login_code(
@@ -84,31 +87,20 @@ pub async fn verify_login_code(
         // redirect to user settings
         Redirect::to("/settings").into_response()
     } else {
+        let template = CodeTemplate {
+            email: verify.email.clone(),
+            show_error: true,
+        };
         // login code page with resend button
-        Html(format!(
-            r#"
-            <form method="post" action="/login/verify">
-                <h1>Enter Code</h1>
-                <input type="hidden" name="email" value="{}"/>
-                <input type="text" name="code"/>
-                <button type="submit">Submit</button>
-            </form>
-            <form method="post" action="/login/resend">
-                <input type="hidden" name="email" value="{}"/>
-                <span>Invalid or expired code.</span>
-                <button type="submit">Resend</button>
-            </form>
-            "#,
-            &verify.email, &verify.email
-        ))
-        .into_response()
+        Html(template.render().unwrap()).into_response()
     }
 }
 
+// TODO: fix weird logic here where it sends you a code but takes you back to the login?
 pub async fn resend_login_code(
     State(state): State<AppState>,
     Form(login): Form<Login>,
-) -> Html<&'static str> {
+) -> Html<String> {
     // delete the code
     state.db.login_codes.delete(&login.email).await;
 
@@ -117,10 +109,5 @@ pub async fn resend_login_code(
     state.db.login_codes.insert(new_login_code).await;
 
     // resend page
-    Html(
-        r#"
-        <span>A new code has been sent.</span>
-        <a href="/login">Back to login</a>
-        "#,
-    )
+    Html(ResendCodeTemplate.render().unwrap())
 }

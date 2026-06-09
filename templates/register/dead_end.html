@@ -1,0 +1,8 @@
+<span>This invite is 
+  {% match error %}
+    {% when RegisterError::Invalid %}
+      invalid.
+    {% when RegisterError::Expired %}
+      expired.
+  {% endmatch %}
+Contact an admin if you would like to register.</span>

@@ -9,6 +9,7 @@ edition = "2024"
 default-run = "daily-stoic"
 
 [dependencies]
+askama = "0.16.0"
 axum = "0.8.6"
 dotenvy = "0.15.7"
 rand = "0.10.1"

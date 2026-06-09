@@ -1,0 +1,17 @@
+<form method="post" action="/settings">
+  <h1>{{ email }}'s settings</h1>
+  <span>Receive emails</span>
+  <input type="checkbox" name="emails_enabled" {{ emails_enabled }}/>
+  <br>
+  <span>Schedule</span>
+  <input type="time" name="send_time" value="{{ send_time }}"/>
+  <br>
+  <button type="submit">Save</button>
+</form>
+<form method="post" action="/settings/send/daily">
+  <button type="submit">Daily</button>
+</form>
+<form method="post" action="/settings/send/random">
+  <button type="submit">Random</button>
+</form>
+
