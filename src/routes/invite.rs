@@ -1,16 +1,14 @@
 use crate::AppState;
 use crate::models::Invite;
-use axum::{extract::State, http::StatusCode};
 
-pub async fn generate_invite(State(state): State<AppState>) -> Result<String, StatusCode> {
-    for _ in 0..5 {
-        let invite = Invite::default();
+use axum::extract::State;
 
-        if state.db.invites.get(&invite.id).await.is_none() {
-            state.db.invites.insert(&invite).await;
-            return Ok(format!("{}/register/{}", state.config.base_url, invite.id));
-        }
-    }
+pub async fn generate_invite_link(State(state): State<AppState>) -> String {
+    let invite = Invite::default();
+    state.db.invites.insert(&invite).await;
+    invite_link(&state.config.base_url, &invite)
+}
 
-    Err(StatusCode::INTERNAL_SERVER_ERROR)
+fn invite_link(base_url: &str, invite: &Invite) -> String {
+    format!("{}/register/{}", base_url, &invite.id)
 }

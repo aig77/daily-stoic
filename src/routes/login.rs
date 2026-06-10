@@ -65,7 +65,14 @@ pub async fn submit_login(State(state): State<AppState>, Form(login): Form<Login
         );
     }
 
+<<<<<<< HEAD
     let template = VerifyTemplate { email: login.email };
+=======
+    let template = CodeTemplate {
+        email: login.email,
+        show_error: false,
+    };
+>>>>>>> feat/admin-invite
 
     // login code page
     Html(template.render().unwrap())

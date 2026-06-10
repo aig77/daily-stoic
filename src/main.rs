@@ -9,7 +9,7 @@ use daily_stoic::{
     database::Database,
     middleware::{init_tracing, sessions::create_session_layer},
     routes::{
-        invite::generate_invite,
+        invite::generate_invite_link,
         login::{login_page, resend_login_code, submit_login, verify_login_code},
         quotes::{get_daily_quote, get_quote_by_id, get_random_quote},
         register::{register_ok_page, register_page, submit_register},
@@ -34,7 +34,7 @@ async fn main() {
         .route("/login", get(login_page).post(submit_login))
         .route("/login/verify", post(verify_login_code))
         .route("/login/resend", post(resend_login_code))
-        .route("/invite", post(generate_invite))
+        .route("/invite", post(generate_invite_link))
         .route("/register/{id}", get(register_page).post(submit_register))
         .route("/register/ok", get(register_ok_page))
         .route("/settings", get(settings_page).post(save_settings))

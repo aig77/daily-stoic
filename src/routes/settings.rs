@@ -1,6 +1,8 @@
 use crate::AppState;
 use crate::middleware::sessions::{EMAIL_KEY, Session};
 
+use super::invite::generate_invite_url;
+
 use askama::Template;
 use axum::{
     Form,
@@ -23,6 +25,10 @@ struct PageTemplate {
     emails_enabled: bool,
     send_time: String,
     is_admin: bool,
+<<<<<<< HEAD
+=======
+    invite_url: Option<String>,
+>>>>>>> feat/admin-invite
 }
 
 #[derive(Template)]
@@ -36,13 +42,24 @@ pub async fn settings_page(State(state): State<AppState>, session: Session) -> i
 
     let user = state.db.users.get(&email).await.unwrap();
 
+<<<<<<< HEAD
     info!("{}", user.is_admin);
+=======
+    let invite_url = match generate_invite_url(&state).await {
+        Ok(url) => Some(url),
+        Err(_) => None,
+    };
+>>>>>>> feat/admin-invite
 
     let template = PageTemplate {
         email,
         emails_enabled: user.emails_enabled == 1,
         send_time: user.send_time,
         is_admin: user.is_admin == 1,
+<<<<<<< HEAD
+=======
+        invite_url,
+>>>>>>> feat/admin-invite
     };
 
     Html(template.render().unwrap()).into_response()
