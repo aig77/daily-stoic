@@ -6,7 +6,7 @@ use askama::Template;
 use axum::{
     Form,
     extract::State,
-    response::{Html, IntoResponse, Redirect},
+    response::{Html, IntoResponse},
 };
 use serde::Deserialize;
 use tracing::info;
@@ -27,15 +27,20 @@ pub struct Verify {
 struct PageTemplate;
 
 #[derive(Template)]
-#[template(path = "login/code.html")]
-struct CodeTemplate {
+#[template(path = "login/verify.html")]
+struct VerifyTemplate {
     email: String,
-    show_error: bool,
 }
 
 #[derive(Template)]
-#[template(path = "login/resend_code.html")]
-struct ResendCodeTemplate;
+#[template(path = "login/verify_error.html")]
+struct ErrorFragment;
+
+#[derive(Template)]
+#[template(path = "login/verify_resend_ok.html")]
+struct ResendOkFragment {
+    email: String,
+}
 
 pub async fn login_page() -> Html<String> {
     Html(PageTemplate.render().unwrap())
@@ -60,10 +65,7 @@ pub async fn submit_login(State(state): State<AppState>, Form(login): Form<Login
         );
     }
 
-    let template = CodeTemplate {
-        email: login.email.clone(),
-        show_error: false,
-    };
+    let template = VerifyTemplate { email: login.email };
 
     // login code page
     Html(template.render().unwrap())
@@ -74,6 +76,7 @@ pub async fn verify_login_code(
     session: Session,
     Form(verify): Form<Verify>,
 ) -> impl IntoResponse {
+    // verification success
     if let Some(login_code) = state.db.login_codes.get(&verify.email).await
         && login_code.code == verify.code
         && !login_code.is_expired()
@@ -85,14 +88,10 @@ pub async fn verify_login_code(
         state.db.login_codes.delete(&verify.email).await;
 
         // redirect to user settings
-        Redirect::to("/settings").into_response()
+        ([("HX-Redirect", "/settings")], "").into_response()
     } else {
-        let template = CodeTemplate {
-            email: verify.email.clone(),
-            show_error: true,
-        };
-        // login code page with resend button
-        Html(template.render().unwrap()).into_response()
+        // with resend button
+        Html(ErrorFragment.render().unwrap()).into_response()
     }
 }
 
@@ -106,8 +105,12 @@ pub async fn resend_login_code(
 
     // create a new one
     let new_login_code = LoginCode::new(&login.email);
-    state.db.login_codes.insert(new_login_code).await;
+    state.db.login_codes.insert(new_login_code.clone()).await;
+    // TODO: convert to resending code via email
+    info!("resend: {}", &new_login_code.code);
 
-    // resend page
-    Html(ResendCodeTemplate.render().unwrap())
+    let template = ResendOkFragment { email: login.email };
+
+    // with resend ok
+    Html(template.render().unwrap())
 }

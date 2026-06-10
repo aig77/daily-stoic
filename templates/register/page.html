@@ -3,12 +3,10 @@
 {% block title %}Register{% endblock %}
 
 {% block content %}
-  <h1>Wanna register?</h1>
-  <form method="post" action="/register/{{ id }}">
+  <form hx-post="/register/{{ id }}" hx-target="#email-taken">
+    <h1>Register</h1>
     <input type="email" name="email" placeholder="Enter your email" />
     <button type="submit">Register</button>
-    {% if email_taken %}
-      <span>An account with that email already exists</span>
-    {% endif %}
   </form>
+  <div id="email-taken"></div>
 {% endblock %}

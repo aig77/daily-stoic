@@ -3,9 +3,9 @@
 {% block title %}Login{% endblock %}
 
 {% block content %}
-  <form method="post" action="/login">
-    <h1>Wanna login?</h1>
-    <input type="email" name="email" placeholder="Enter your email" />
+  <form hx-post="/login" hx-target="body" hx-swap="outerHTML">
+    <h1>Login</h1>
+    <input type="email" name="email" placeholder="Enter email"/>
     <button type="submit">Login</button>
   </form>
 {% endblock %}

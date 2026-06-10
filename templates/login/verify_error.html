@@ -1,0 +1,10 @@
+<div id="error-area"> 
+  <span>Invalid or expired code.</span>
+  <button
+      hx-post="/login/resend"
+      hx-include="[name='email']"
+      hx-target="#error-area"
+      hx-disabled-elt="this">
+      Resend
+    </button>
+</div>

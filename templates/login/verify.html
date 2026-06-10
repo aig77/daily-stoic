@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block title %}Login{% endblock %}
+
+{% block content %}
+  <form hx-post="/login/verify" hx-target="#error-area">
+    <h1>Enter Code</h1>
+    <input type="hidden" name="email" value="{{ email }}"/>
+    <input type="text" name="code"/>
+    <button >Submit</button>
+  </form>
+  <div id="error-area"></div>
+{% endblock %}
