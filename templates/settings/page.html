@@ -6,7 +6,7 @@
   <form hx-post="/settings">
     <h1>{{ email }}'s settings</h1>
     <span>Receive emails</span>
-    <input type="checkbox" name="emails_enabled" {{ emails_enabled }}/>
+    <input type="checkbox" name="emails_enabled" {% if emails_enabled %}checked{% endif %}/>
     <br>
     <span>Schedule</span>
     <input type="time" name="send_time" value="{{ send_time }}"/>
