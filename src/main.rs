@@ -7,13 +7,13 @@ use daily_stoic::{
     AppState,
     config::Config,
     database::Database,
-    middleware::{init_tracing, sessions::create_session_layer},
-    routes::{
+    handlers::{
         login::{login_page, resend_login_code, submit_login, verify_login_code},
         quotes::{get_daily_quote, get_quote_by_id, get_random_quote},
         register::{register_ok_page, register_page, submit_register},
         settings::{generate_invite_link, save_settings, send_daily, send_random, settings_page},
     },
+    middleware::{init_tracing, sessions::create_session_layer},
 };
 
 #[tokio::main]
