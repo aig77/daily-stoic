@@ -1,13 +1,12 @@
 use crate::AppState;
-use crate::middleware::sessions::{EMAIL_KEY, Session};
+use crate::middleware::auth::{AdminUser, AuthUser};
 use crate::models::Invite;
 
 use askama::Template;
-use axum::http::StatusCode;
 use axum::{
     Form,
     extract::State,
-    response::{Html, IntoResponse, Redirect},
+    response::{Html, Redirect},
 };
 use serde::Deserialize;
 use tracing::info;
@@ -31,89 +30,53 @@ struct PageTemplate {
 #[template(path = "settings/page_admin.html")]
 struct AdminTemplate;
 
-pub async fn settings_page(State(state): State<AppState>, session: Session) -> impl IntoResponse {
-    let Some(email) = session.get::<String>(EMAIL_KEY).await.unwrap() else {
-        return Redirect::to("/login").into_response();
-    };
-
-    let user = state.db.users.get(&email).await.unwrap();
-
-    info!("{}", user.is_admin);
+pub async fn settings_page(State(state): State<AppState>, auth: AuthUser) -> Html<String> {
+    let user = state.db.users.get(&auth.email).await.unwrap();
 
     let template = PageTemplate {
-        email,
+        email: user.email,
         emails_enabled: user.emails_enabled == 1,
         send_time: user.send_time,
         is_admin: user.is_admin == 1,
     };
 
-    Html(template.render().unwrap()).into_response()
+    Html(template.render().unwrap())
 }
 
 pub async fn save_settings(
     State(state): State<AppState>,
-    session: Session,
+    auth: AuthUser,
     Form(settings): Form<Settings>,
 ) -> Redirect {
-    match session.get::<String>(EMAIL_KEY).await.unwrap() {
-        Some(email) => {
-            let emails_enabled = if settings.emails_enabled.is_some() {
-                1
-            } else {
-                0
-            };
-            state
-                .db
-                .users
-                .update(email, emails_enabled, settings.send_time)
-                .await;
-            Redirect::to("/settings")
-        }
-        None => Redirect::to("/login"),
-    }
-}
-
-pub async fn send_daily(State(state): State<AppState>, session: Session) -> Redirect {
-    match session.get::<String>(EMAIL_KEY).await.unwrap() {
-        Some(_) => {
-            let quote = state.db.quotes.get_daily().await;
-            info!("{:#?}", quote);
-            Redirect::to("/settings")
-        }
-        None => Redirect::to("/login"),
-    }
-}
-
-pub async fn send_random(State(state): State<AppState>, session: Session) -> Redirect {
-    match session.get::<String>(EMAIL_KEY).await.unwrap() {
-        Some(_) => {
-            let quote = state.db.quotes.get_random().await;
-            info!("{:#?}", quote);
-            Redirect::to("/settings")
-        }
-        None => Redirect::to("/login"),
-    }
-}
-
-pub async fn generate_invite_link(
-    State(state): State<AppState>,
-    session: Session,
-) -> impl IntoResponse {
-    let Some(email) = session.get::<String>(EMAIL_KEY).await.unwrap() else {
-        return Redirect::to("/login").into_response();
+    let emails_enabled = if settings.emails_enabled.is_some() {
+        1
+    } else {
+        0
     };
+    state
+        .db
+        .users
+        .update(auth.email, emails_enabled, settings.send_time)
+        .await;
+    Redirect::to("/settings")
+}
 
-    let Some(user) = state.db.users.get(&email).await else {
-        return Redirect::to("/login").into_response();
-    };
+pub async fn send_daily(State(state): State<AppState>, _auth: AuthUser) -> Redirect {
+    let quote = state.db.quotes.get_daily().await;
+    info!("{:#?}", quote);
+    Redirect::to("/settings")
+}
 
-    if user.is_admin != 1 {
-        return StatusCode::FORBIDDEN.into_response();
-    }
+pub async fn send_random(State(state): State<AppState>, _auth: AuthUser) -> Redirect {
+    let quote = state.db.quotes.get_random().await;
+    info!("{:#?}", quote);
+    Redirect::to("/settings")
+}
 
+pub async fn generate_invite_link(State(state): State<AppState>, _auth: AdminUser) -> String {
     let invite = Invite::default();
     state.db.invites.insert(&invite).await;
-    invite_link(&state.config.base_url, &invite).into_response()
+    invite_link(&state.config.base_url, &invite)
 }
 
 fn invite_link(base_url: &str, invite: &Invite) -> String {

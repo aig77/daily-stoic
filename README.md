@@ -19,7 +19,8 @@ make watch
 ```
 
 ## TODO
--[ ] Auth middleware using custom extractor
+-[x] Auth middleware using custom extractor
+-[ ] MORE LOGS
 -[ ] Delete account settings option
 -[ ] Rate limiting
 -[ ] Admin page
