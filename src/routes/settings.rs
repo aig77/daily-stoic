@@ -1,9 +1,9 @@
 use crate::AppState;
 use crate::middleware::sessions::{EMAIL_KEY, Session};
-
-use super::invite::generate_invite_link;
+use crate::models::Invite;
 
 use askama::Template;
+use axum::http::StatusCode;
 use axum::{
     Form,
     extract::State,
@@ -93,4 +93,29 @@ pub async fn send_random(State(state): State<AppState>, session: Session) -> Red
         }
         None => Redirect::to("/login"),
     }
+}
+
+pub async fn generate_invite_link(
+    State(state): State<AppState>,
+    session: Session,
+) -> impl IntoResponse {
+    let Some(email) = session.get::<String>(EMAIL_KEY).await.unwrap() else {
+        return Redirect::to("/login").into_response();
+    };
+
+    let Some(user) = state.db.users.get(&email).await else {
+        return Redirect::to("/login").into_response();
+    };
+
+    if user.is_admin != 1 {
+        return StatusCode::FORBIDDEN.into_response();
+    }
+
+    let invite = Invite::default();
+    state.db.invites.insert(&invite).await;
+    invite_link(&state.config.base_url, &invite).into_response()
+}
+
+fn invite_link(base_url: &str, invite: &Invite) -> String {
+    format!("{}/register/{}", base_url, &invite.id)
 }
