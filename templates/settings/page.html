@@ -3,7 +3,7 @@
 {% block title %}Settings{% endblock %}
 
 {% block content %}
-  <form method="post" action="/settings">
+  <form hx-post="/settings">
     <h1>{{ email }}'s settings</h1>
     <span>Receive emails</span>
     <input type="checkbox" name="emails_enabled" {{ emails_enabled }}/>
@@ -19,4 +19,7 @@
   <form method="post" action="/settings/send/random">
     <button type="submit">Random</button>
   </form>
+  {% if is_admin %}
+    {% include "page_admin.html" %} 
+  {% endif %}
 {% endblock %}

@@ -22,7 +22,12 @@ struct PageTemplate {
     email: String,
     emails_enabled: bool,
     send_time: String,
+    is_admin: bool,
 }
+
+#[derive(Template)]
+#[template(path = "settings/page_admin.html")]
+struct AdminTemplate;
 
 pub async fn settings_page(State(state): State<AppState>, session: Session) -> impl IntoResponse {
     let Some(email) = session.get::<String>(EMAIL_KEY).await.unwrap() else {
@@ -31,10 +36,13 @@ pub async fn settings_page(State(state): State<AppState>, session: Session) -> i
 
     let user = state.db.users.get(&email).await.unwrap();
 
+    info!("{}", user.is_admin);
+
     let template = PageTemplate {
         email,
         emails_enabled: user.emails_enabled == 1,
         send_time: user.send_time,
+        is_admin: user.is_admin == 1,
     };
 
     Html(template.render().unwrap()).into_response()
