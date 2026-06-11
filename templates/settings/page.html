@@ -3,26 +3,80 @@
 {% block title %}Settings{% endblock %}
 
 {% block content %}
-  <form hx-post="/settings">
-    <h1>{{ email }}'s settings</h1>
-    <span>Receive emails</span>
-    <input type="checkbox" name="emails_enabled" {% if emails_enabled %}checked{% endif %}/>
-    <br>
-    <span>Schedule</span>
-    <input type="time" name="send_time" value="{{ send_time }}"/>
-    <br>
-    <button type="submit">Save</button>
-  </form>
-  <form method="post" action="/settings/send/daily">
-    <button type="submit">Daily</button>
-  </form>
-  <form method="post" action="/settings/send/random">
-    <button type="submit">Random</button>
-  </form>
-  <form method="post" action="/settings/delete">
-    <button type="submit">Delete</button>
-  </form
+<div style="max-width: 640px; margin: 0 auto; padding: 1.5rem 1rem 0">
+  <hgroup style="margin-bottom: 1.5rem">
+    <h2>Settings</h2>
+    <p>{{ email }}</p>
+  </hgroup>
+
+  <article>
+    <header><strong>Email preferences</strong></header>
+    <form hx-post="/settings" hx-target="#save-status" hx-swap="innerHTML">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem">
+        <span>Receive daily emails</span>
+        <input type="checkbox" role="switch" name="emails_enabled" {% if emails_enabled %}checked{% endif %} style="margin: 0; width: auto" />
+      </div>
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem">
+        <label for="send_time_display" style="margin: 0">Send time</label>
+        <input type="time" id="send_time_display" step="900" style="margin: 0; width: auto" />
+      </div>
+      <input type="hidden" id="send_time_utc" name="send_time" value="{{ send_time }}" />
+      <div style="display: flex; align-items: center; gap: 1rem; margin-top: 0.25rem">
+        <button type="submit" style="width: auto; margin-bottom: 0">Save</button>
+        <span id="save-status"></span>
+      </div>
+    </form>
+    <script>
+      (function () {
+        function utcToLocal(t) {
+          const [h, m] = t.split(':');
+          const d = new Date();
+          d.setUTCHours(+h, +m, 0, 0);
+          return d.toTimeString().slice(0, 5);
+        }
+        function localToUtc(t) {
+          const [h, m] = t.split(':');
+          const d = new Date();
+          d.setHours(+h, +m, 0, 0);
+          return String(d.getUTCHours()).padStart(2, '0') + ':' + String(d.getUTCMinutes()).padStart(2, '0');
+        }
+        const utcInput = document.getElementById('send_time_utc');
+        const localInput = document.getElementById('send_time_display');
+        localInput.value = utcToLocal(utcInput.value);
+        localInput.closest('form').addEventListener('htmx:configRequest', function (event) {
+          event.detail.parameters['send_time'] = localToUtc(localInput.value);
+        });
+      })();
+    </script>
+  </article>
+
+  <article style="margin-top: 1rem">
+    <header><strong>Send quote</strong></header>
+    <div style="display: flex; gap: 0.75rem">
+      <form method="post" action="/settings/send/daily" style="margin: 0">
+        <button type="submit" class="secondary outline" style="margin: 0; width: auto">Daily</button>
+      </form>
+      <form method="post" action="/settings/send/random" style="margin: 0">
+        <button type="submit" class="secondary outline" style="margin: 0; width: auto">Random</button>
+      </form>
+    </div>
+  </article>
+
   {% if is_admin %}
-    {% include "page_admin.html" %} 
+    {% include "page_admin.html" %}
   {% endif %}
+
+  <div class="danger-zone">
+    <h3>Danger Zone</h3>
+    <p>Once deleted, your account and all data cannot be recovered.</p>
+    <button
+      class="btn-danger"
+      hx-get="/settings/delete-confirm"
+      hx-target="#delete-confirm"
+      hx-swap="innerHTML">
+      Delete Account
+    </button>
+    <div id="delete-confirm"></div>
+  </div>
+</div>
 {% endblock %}

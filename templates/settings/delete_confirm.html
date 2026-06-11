@@ -1,0 +1,24 @@
+<div style="margin-top: 1rem; padding: 1rem; background: #100909; border: 1px solid #3d1c1c; border-radius: var(--pico-border-radius)">
+  <p style="font-size: 0.875rem; margin-bottom: 0.75rem; color: var(--pico-muted-color)">
+    Type <strong style="color: var(--pico-color)">memento mori</strong> to confirm. This cannot be undone.
+  </p>
+  <form method="post" action="/settings/delete" style="display: flex; gap: 0.5rem; align-items: center; margin: 0">
+    <input
+      id="confirm-input"
+      type="text"
+      name="confirm"
+      placeholder="memento mori"
+      autocomplete="off"
+      style="width: 8.25rem; min-width: 0; flex: none; margin: 0; padding: 0.35rem 0.7rem; font-size: 0.9rem"
+      oninput="document.getElementById('delete-submit').disabled = this.value !== 'memento mori'" />
+    <button
+      id="delete-submit"
+      type="submit"
+      disabled
+      class="btn-danger"
+      style="width: auto; flex: none; margin: 0; padding: 0.4rem 0.9rem; font-size: 0.9rem">
+      Confirm
+    </button>
+  </form>
+  <script>document.getElementById('confirm-input').focus()</script>
+</div>

@@ -1,5 +1,13 @@
-<div id="admin">
-  <span>Generate an invite </span>
-  <button hx-post="/settings/invite" hx-target="#invite-link">Generate</button>
-  <span id="invite-link"></span>
-</div>
+<article style="margin-top: 1rem">
+  <header><strong>Admin</strong></header>
+  <div style="display: flex; align-items: center; gap: 1rem">
+    <button
+      hx-post="/settings/invite"
+      hx-target="#invite-status"
+      hx-swap="innerHTML"
+      style="width: auto; margin: 0">
+      Generate Invite Link
+    </button>
+    <span id="invite-status"></span>
+  </div>
+</article>

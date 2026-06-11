@@ -6,7 +6,8 @@ use askama::Template;
 use axum::{
     Form,
     extract::State,
-    response::{Html, Redirect},
+    http::StatusCode,
+    response::{Html, IntoResponse, Redirect},
 };
 use serde::Deserialize;
 use tracing::info;
@@ -15,6 +16,11 @@ use tracing::info;
 pub struct Settings {
     pub emails_enabled: Option<String>,
     pub send_time: String,
+}
+
+#[derive(Deserialize)]
+pub struct DeleteForm {
+    pub confirm: Option<String>,
 }
 
 #[derive(Template)]
@@ -34,6 +40,20 @@ struct AdminTemplate;
 #[template(path = "settings/delete_ok.html")]
 struct DeletedTemplate;
 
+#[derive(Template)]
+#[template(path = "settings/save_ok.html")]
+struct SaveOkTemplate;
+
+#[derive(Template)]
+#[template(path = "settings/delete_confirm.html")]
+struct DeleteConfirmTemplate;
+
+#[derive(Template)]
+#[template(path = "settings/invite_ok.html")]
+struct InviteOkTemplate {
+    url: String,
+}
+
 pub async fn settings_page(State(state): State<AppState>, auth: AuthUser) -> Html<String> {
     let user = state.db.users.get(&auth.email).await.unwrap();
 
@@ -47,11 +67,27 @@ pub async fn settings_page(State(state): State<AppState>, auth: AuthUser) -> Htm
     Html(template.render().unwrap())
 }
 
+fn round_to_15_min(time: &str) -> String {
+    let Some((h, m)) = time.split_once(':') else {
+        return time.to_string();
+    };
+    let (Ok(hours), Ok(minutes)) = (h.parse::<u32>(), m.parse::<u32>()) else {
+        return time.to_string();
+    };
+    let rounded = ((minutes + 7) / 15) * 15;
+    let (hours, minutes) = if rounded >= 60 {
+        ((hours + 1) % 24, 0)
+    } else {
+        (hours, rounded)
+    };
+    format!("{:02}:{:02}", hours, minutes)
+}
+
 pub async fn save_settings(
     State(state): State<AppState>,
     auth: AuthUser,
     Form(settings): Form<Settings>,
-) -> Redirect {
+) -> Html<String> {
     let emails_enabled = if settings.emails_enabled.is_some() {
         1
     } else {
@@ -60,9 +96,9 @@ pub async fn save_settings(
     state
         .db
         .users
-        .update(auth.email, emails_enabled, settings.send_time)
+        .update(auth.email, emails_enabled, round_to_15_min(&settings.send_time))
         .await;
-    Redirect::to("/settings")
+    Html(SaveOkTemplate.render().unwrap())
 }
 
 pub async fn send_daily(State(state): State<AppState>, _auth: AuthUser) -> Redirect {
@@ -77,17 +113,29 @@ pub async fn send_random(State(state): State<AppState>, _auth: AuthUser) -> Redi
     Redirect::to("/settings")
 }
 
-pub async fn generate_invite_link(State(state): State<AppState>, _auth: AdminUser) -> String {
+pub async fn generate_invite_link(State(state): State<AppState>, _auth: AdminUser) -> Html<String> {
     let invite = Invite::default();
     state.db.invites.insert(&invite).await;
-    invite_link(&state.config.base_url, &invite)
+    let url = invite_link(&state.config.base_url, &invite);
+    Html(InviteOkTemplate { url }.render().unwrap())
 }
 
 fn invite_link(base_url: &str, invite: &Invite) -> String {
     format!("{}/register/{}", base_url, &invite.id)
 }
 
-pub async fn delete_user(State(state): State<AppState>, auth: AuthUser) -> Html<String> {
+pub async fn delete_confirm_form(_auth: AuthUser) -> Html<String> {
+    Html(DeleteConfirmTemplate.render().unwrap())
+}
+
+pub async fn delete_user(
+    State(state): State<AppState>,
+    auth: AuthUser,
+    Form(body): Form<DeleteForm>,
+) -> impl IntoResponse {
+    if body.confirm.as_deref() != Some("memento mori") {
+        return StatusCode::UNPROCESSABLE_ENTITY.into_response();
+    }
     state.db.users.delete(&auth.email).await;
-    Html(DeletedTemplate.render().unwrap())
+    Html(DeletedTemplate.render().unwrap()).into_response()
 }
