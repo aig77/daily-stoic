@@ -46,12 +46,13 @@ make watch
 - [x] Tracing middleware
 - [x] Delete account option in settings
 - [x] Delete account confirmation (are you sure?)
-- [ ] Save settings confirmation (HTMX inline response)
+- [ ] Handle timezone conversion for scheduling
 - [ ] Send login codes via email (currently logging only)
 - [ ] Send quote emails via Resend
 - [ ] Email scheduling — cron job to send quotes at user's `send_time`
-- [ ] Copy invite link to clipboard on click
 - [ ] Admin page for managing users
 - [ ] Rate limiting
+- [ ] Save settings confirmation (HTMX inline response)
+- [ ] Copy invite link to clipboard on click
 - [ ] Nice frontend
 - [ ] More logs
