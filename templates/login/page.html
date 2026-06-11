@@ -3,9 +3,15 @@
 {% block title %}Login{% endblock %}
 
 {% block content %}
-  <form hx-post="/login" hx-target="body" hx-swap="outerHTML">
-    <h1>Login</h1>
-    <input type="email" name="email" placeholder="Enter email"/>
-    <button type="submit">Login</button>
-  </form>
+<div style="max-width: 420px; margin: 5rem auto 0">
+  <article>
+    <hgroup style="text-align: center">
+      <h2>Enter your email</h2>
+    </hgroup>
+    <form hx-post="/login" hx-target="body" hx-swap="outerHTML">
+      <input type="email" name="email" autocomplete="email" required autofocus style="text-align: center" />
+      <button type="submit">Send Code</button>
+    </form>
+  </article>
+</div>
 {% endblock %}

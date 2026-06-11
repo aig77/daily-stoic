@@ -1,15 +1,97 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{% block title %}{% endblock %} - Daily Stoic</title>
-    <script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.10/dist/htmx.min.js" 
+    <title>{% block title %}{% endblock %} — Daily Stoic</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏛️</text></svg>">
+    <script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.10/dist/htmx.min.js"
       integrity="sha384-H5SrcfygHmAuTDZphMHqBJLc3FhssKjG7w/CeCpFReSfwBWDTKpkzPP8c+cLsK+V"
       crossorigin="anonymous"></script>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏛️</text></svg>">
+    <style>
+      :root {
+        --pico-background-color: #0e0d0b;
+        --pico-color: #cdc2a8;
+        --pico-muted-color: #726753;
+        --pico-primary: #b8924f;
+        --pico-primary-hover: #cba562;
+        --pico-primary-background: #b8924f;
+        --pico-primary-hover-background: #cba562;
+        --pico-card-background-color: #181410;
+        --pico-card-border-color: #2c2720;
+        --pico-card-sectioning-background-color: #141210;
+        --pico-form-element-background-color: #111009;
+        --pico-form-element-border-color: #2c2720;
+        --pico-form-element-color: #cdc2a8;
+        --pico-border-color: #2c2720;
+        --pico-muted-border-color: #2c2720;
+      }
+
+      .save-ok {
+        color: #6a9a6e;
+        font-size: 0.875rem;
+        animation: fadeout 2.5s forwards;
+      }
+
+      @keyframes fadeout {
+        0%, 65% { opacity: 1; }
+        100% { opacity: 0; }
+      }
+
+      .danger-zone {
+        border: 1px solid #3d1c1c;
+        border-radius: var(--pico-border-radius);
+        padding: 1.5rem;
+        margin-top: 1rem;
+      }
+
+      .danger-zone h3 {
+        color: #a84040;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        margin-bottom: 0.4rem;
+      }
+
+      .danger-zone > p {
+        font-size: 0.875rem;
+        color: var(--pico-muted-color);
+        margin-bottom: 1rem;
+      }
+
+      .btn-danger {
+        background: transparent;
+        border: 1px solid #7a3030;
+        color: #c05050;
+        border-radius: var(--pico-border-radius);
+        padding: 0.5rem 1rem;
+        font-size: 0.9rem;
+        cursor: pointer;
+        line-height: 1.5;
+      }
+
+      .btn-danger:hover:not([disabled]) {
+        background: #1e0e0e;
+        border-color: #c05050;
+      }
+
+      .btn-danger[disabled] {
+        opacity: 0.35;
+        cursor: not-allowed;
+      }
+    </style>
   </head>
   <body>
-    {% block content %}{% endblock %}
+    <header class="container">
+      <nav>
+        <ul>
+          <li><strong>🏛 Daily Stoic</strong></li>
+        </ul>
+      </nav>
+    </header>
+    <main class="container">
+      {% block content %}{% endblock %}
+    </main>
   </body>
 </html>

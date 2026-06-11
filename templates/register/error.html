@@ -1,14 +1,23 @@
 {% extends "base.html" %}
 
-{% block title %}Register{% endblock %}
+{% block title %}Invalid Invite{% endblock %}
 
 {% block content %}
-  <span>This invite is 
-    {% match error %}
-      {% when RegisterError::Invalid %}
-        invalid.
-      {% when RegisterError::Expired %}
-        expired.
-    {% endmatch %}
-  Contact an admin if you would like to register.</span>
+<div style="max-width: 420px; margin: 5rem auto 0">
+  <article style="text-align: center">
+    <h2>Invite
+      {% match error %}
+        {% when RegisterError::Invalid %}invalid
+        {% when RegisterError::Expired %}expired
+      {% endmatch %}
+    </h2>
+    <p>This invite link is
+      {% match error %}
+        {% when RegisterError::Invalid %}invalid.
+        {% when RegisterError::Expired %}expired.
+      {% endmatch %}
+      Contact an admin if you'd like to register.
+    </p>
+  </article>
+</div>
 {% endblock %}

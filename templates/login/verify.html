@@ -1,13 +1,28 @@
 {% extends "base.html" %}
 
-{% block title %}Login{% endblock %}
+{% block title %}Verify{% endblock %}
 
 {% block content %}
-  <form hx-post="/login/verify" hx-target="#error-area">
-    <h1>Enter Code</h1>
-    <input type="hidden" name="email" value="{{ email }}"/>
-    <input type="text" name="code"/>
-    <button >Submit</button>
-  </form>
-  <div id="error-area"></div>
+<div style="max-width: 420px; margin: 5rem auto 0">
+  <article>
+    <hgroup style="text-align: center">
+      <h2>Check your email</h2>
+      <p>Enter the 5-digit code sent to {{ email }}.</p>
+    </hgroup>
+    <form hx-post="/login/verify" hx-target="#error-area">
+      <input type="hidden" name="email" value="{{ email }}" />
+      <input
+        id="code-input"
+        type="text"
+        name="code"
+        inputmode="numeric"
+        maxlength="5"
+        autocomplete="one-time-code"
+        autofocus
+        style="text-align: center" />
+      <button type="submit">Verify</button>
+    </form>
+    <div id="error-area"></div>
+  </article>
+</div>
 {% endblock %}

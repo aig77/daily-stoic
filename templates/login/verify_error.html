@@ -1,10 +1,14 @@
-<div id="error-area"> 
-  <span>Invalid or expired code.</span>
+<div id="error-area" style="margin-top: 0.75rem; text-align: center">
+  <small style="color: #c05050">Invalid or expired code.</small>
+  <br>
   <button
-      hx-post="/login/resend"
-      hx-include="[name='email']"
-      hx-target="#error-area"
-      hx-disabled-elt="this">
-      Resend
-    </button>
+    class="outline secondary"
+    style="margin-top: 0.5rem; font-size: 0.85rem; padding: 0.4rem 0.8rem"
+    hx-post="/login/resend"
+    hx-include="[name='email']"
+    hx-target="#error-area"
+    hx-disabled-elt="this"
+>
+    Resend code
+  </button>
 </div>

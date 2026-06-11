@@ -3,10 +3,17 @@
 {% block title %}Register{% endblock %}
 
 {% block content %}
-  <form hx-post="/register/{{ id }}" hx-target="#email-taken">
-    <h1>Register</h1>
-    <input type="email" name="email" placeholder="Enter your email" />
-    <button type="submit">Register</button>
-  </form>
-  <div id="email-taken"></div>
+<div style="max-width: 420px; margin: 5rem auto 0">
+  <article>
+    <hgroup style="text-align: center">
+      <h2>Create an account</h2>
+      <p>You've been invited. Enter your email to register.</p>
+    </hgroup>
+    <form hx-post="/register/{{ id }}" hx-target="#email-taken">
+      <input type="email" name="email" placeholder="Email" autocomplete="email" required />
+      <button type="submit">Register</button>
+    </form>
+    <div id="email-taken"></div>
+  </article>
+</div>
 {% endblock %}
