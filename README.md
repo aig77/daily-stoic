@@ -45,8 +45,8 @@ make watch
 - [x] Resend API key integration (wired, not sending yet)
 - [x] Tracing middleware
 - [x] Delete account option in settings
+- [x] Delete account confirmation (are you sure?)
 - [ ] Save settings confirmation (HTMX inline response)
-- [ ] Delete account confirmation (are you sure?)
 - [ ] Send login codes via email (currently logging only)
 - [ ] Send quote emails via Resend
 - [ ] Email scheduling — cron job to send quotes at user's `send_time`
