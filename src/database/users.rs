@@ -37,6 +37,13 @@ impl UsersRepository {
         .unwrap();
     }
 
+    pub async fn delete(&self, email: &str) {
+        sqlx::query!("DELETE FROM users WHERE email = ?1", email)
+            .execute(&self.pool)
+            .await
+            .unwrap();
+    }
+
     pub async fn grant_admin(&self, email: String) {
         sqlx::query!("UPDATE users SET is_admin = 1 WHERE email = ?1", email)
             .execute(&self.pool)

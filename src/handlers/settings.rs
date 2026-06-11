@@ -30,6 +30,10 @@ struct PageTemplate {
 #[template(path = "settings/page_admin.html")]
 struct AdminTemplate;
 
+#[derive(Template)]
+#[template(path = "settings/delete_ok.html")]
+struct DeletedTemplate;
+
 pub async fn settings_page(State(state): State<AppState>, auth: AuthUser) -> Html<String> {
     let user = state.db.users.get(&auth.email).await.unwrap();
 
@@ -81,4 +85,9 @@ pub async fn generate_invite_link(State(state): State<AppState>, _auth: AdminUse
 
 fn invite_link(base_url: &str, invite: &Invite) -> String {
     format!("{}/register/{}", base_url, &invite.id)
+}
+
+pub async fn delete_user(State(state): State<AppState>, auth: AuthUser) -> Html<String> {
+    state.db.users.delete(&auth.email).await;
+    Html(DeletedTemplate.render().unwrap())
 }

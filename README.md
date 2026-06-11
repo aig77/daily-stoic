@@ -44,13 +44,14 @@ make watch
 - [x] HTMX partial page updates on login, register, and settings flows
 - [x] Resend API key integration (wired, not sending yet)
 - [x] Tracing middleware
+- [x] Delete account option in settings
+- [ ] Save settings confirmation (HTMX inline response)
+- [ ] Delete account confirmation (are you sure?)
 - [ ] Send login codes via email (currently logging only)
 - [ ] Send quote emails via Resend
 - [ ] Email scheduling — cron job to send quotes at user's `send_time`
 - [ ] Copy invite link to clipboard on click
-- [ ] Save settings confirmation (HTMX inline response)
 - [ ] Admin page for managing users
-- [ ] Delete account option in settings
 - [ ] Rate limiting
 - [ ] Nice frontend
 - [ ] More logs
