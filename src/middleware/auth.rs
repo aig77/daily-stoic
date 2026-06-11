@@ -12,12 +12,20 @@ use axum::{
 #[template(path = "auth/expired.html")]
 pub struct ExpiredTemplate;
 
+fn expired_response() -> Response {
+    (
+        [("HX-Redirect", "/session-expired")],
+        Html(ExpiredTemplate.render().unwrap()),
+    )
+        .into_response()
+}
+
 pub struct AuthUser {
     pub email: String,
 }
 
 impl FromRequestParts<AppState> for AuthUser {
-    type Rejection = Html<String>;
+    type Rejection = Response;
 
     async fn from_request_parts(
         parts: &mut Parts,
@@ -27,20 +35,20 @@ impl FromRequestParts<AppState> for AuthUser {
         let session = Session::from_request_parts(parts, state).await.unwrap();
         match session.get::<String>(EMAIL_KEY).await.unwrap() {
             Some(email) => Ok(AuthUser { email }),
-            None => Err(Html(ExpiredTemplate.render().unwrap())),
+            None => Err(expired_response()),
         }
     }
 }
 
 pub enum AdminRejection {
-    Expired(Html<String>),
+    Expired,
     Forbidden,
 }
 
 impl IntoResponse for AdminRejection {
     fn into_response(self) -> Response {
         match self {
-            AdminRejection::Expired(html) => html.into_response(),
+            AdminRejection::Expired => expired_response(),
             AdminRejection::Forbidden => StatusCode::FORBIDDEN.into_response(),
         }
     }
@@ -59,9 +67,7 @@ impl FromRequestParts<AppState> for AdminUser {
     ) -> Result<Self, Self::Rejection> {
         let session = Session::from_request_parts(parts, state).await.unwrap();
         let Some(email) = session.get::<String>(EMAIL_KEY).await.unwrap() else {
-            return Err(AdminRejection::Expired(Html(
-                ExpiredTemplate.render().unwrap(),
-            )));
+            return Err(AdminRejection::Expired);
         };
 
         if let Some(user) = state.db.users.get(&email).await

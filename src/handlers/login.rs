@@ -1,4 +1,5 @@
 use crate::AppState;
+use crate::middleware::auth::ExpiredTemplate;
 use crate::middleware::sessions::{EMAIL_KEY, Session};
 use crate::models::LoginCode;
 
@@ -44,6 +45,10 @@ struct ResendOkFragment {
 
 pub async fn login_page() -> Html<String> {
     Html(PageTemplate.render().unwrap())
+}
+
+pub async fn session_expired_page() -> Html<String> {
+    Html(ExpiredTemplate.render().unwrap())
 }
 
 pub async fn submit_login(State(state): State<AppState>, Form(login): Form<Login>) -> Html<String> {

@@ -8,12 +8,12 @@ use daily_stoic::{
     config::Config,
     database::Database,
     handlers::{
-        login::{login_page, resend_login_code, submit_login, verify_login_code},
+        login::{login_page, resend_login_code, session_expired_page, submit_login, verify_login_code},
         quotes::{get_daily_quote, get_quote_by_id, get_random_quote},
         register::{register_ok_page, register_page, submit_register},
         settings::{
-            delete_user, generate_invite_link, save_settings, send_daily, send_random,
-            settings_page,
+            delete_confirm_form, delete_user, generate_invite_link, save_settings, send_daily,
+            send_random, settings_page,
         },
     },
     middleware::{init_tracing, sessions::create_session_layer},
@@ -34,6 +34,7 @@ async fn main() {
     let app = Router::new()
         .route("/", get(|| async { Redirect::temporary("/login") }))
         .route("/login", get(login_page).post(submit_login))
+        .route("/session-expired", get(session_expired_page))
         .route("/login/verify", post(verify_login_code))
         .route("/login/resend", post(resend_login_code))
         .route("/register/{id}", get(register_page).post(submit_register))
@@ -42,6 +43,7 @@ async fn main() {
         .route("/settings/send/daily", post(send_daily))
         .route("/settings/send/random", post(send_random))
         .route("/settings/delete", post(delete_user))
+        .route("/settings/delete-confirm", get(delete_confirm_form))
         .route("/settings/invite", post(generate_invite_link))
         .route("/quote/{id}", get(get_quote_by_id))
         .route("/quote/daily", get(get_daily_quote))

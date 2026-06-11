@@ -1,1 +1,13 @@
-<p>Session expired. <a href="/login">Return to login</a></p>
+{% extends "base.html" %}
+
+{% block title %}Session Expired{% endblock %}
+
+{% block content %}
+<div style="max-width: 420px; margin: 5rem auto 0">
+  <article style="text-align: center">
+    <h2>Session expired</h2>
+    <p>Your session has expired. Please log in again.</p>
+    <a href="/login" role="button">Return to Login</a>
+  </article>
+</div>
+{% endblock %}
