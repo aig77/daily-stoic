@@ -1,6 +1,8 @@
 use crate::AppState;
-use crate::middleware::auth::ExpiredTemplate;
-use crate::middleware::sessions::{EMAIL_KEY, Session};
+use crate::api::middleware::{
+    auth::ExpiredTemplate,
+    sessions::{EMAIL_KEY, Session},
+};
 use crate::models::LoginCode;
 
 use askama::Template;

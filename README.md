@@ -51,8 +51,8 @@ make watch
 - [x] Nice frontend
 - [x] Schedule 15 min increments only
 - [x] Handle timezone conversion for scheduling
+- [x] Rate limiting
+- [ ] More logs
 - [ ] Send login codes via email (currently logging only)
 - [ ] Send quote emails via Resend
 - [ ] Email scheduling — cron job to send quotes at user's `send_time`
-- [ ] Rate limiting
-- [ ] More logs

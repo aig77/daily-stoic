@@ -1,5 +1,5 @@
 use crate::AppState;
-use crate::middleware::auth::{AdminUser, AuthUser};
+use crate::api::middleware::auth::{AdminUser, AuthUser};
 use crate::models::Invite;
 
 use askama::Template;
@@ -7,9 +7,10 @@ use axum::{
     Form,
     extract::State,
     http::StatusCode,
-    response::{Html, IntoResponse, Redirect},
+    response::{Html, IntoResponse},
 };
 use serde::Deserialize;
+use std::time::{Duration, Instant};
 use tracing::info;
 
 #[derive(Deserialize)]
@@ -54,6 +55,16 @@ struct InviteOkTemplate {
     url: String,
 }
 
+#[derive(Template)]
+#[template(path = "errors/message_sent.html")]
+struct MessageSentToast;
+
+#[derive(Template)]
+#[template(path = "errors/rate_limit.html")]
+struct MessageRateLimitToast {
+    message: String,
+}
+
 pub async fn settings_page(State(state): State<AppState>, auth: AuthUser) -> Html<String> {
     let user = state.db.users.get(&auth.email).await.unwrap();
 
@@ -96,21 +107,70 @@ pub async fn save_settings(
     state
         .db
         .users
-        .update(auth.email, emails_enabled, round_to_15_min(&settings.send_time))
+        .update(
+            auth.email,
+            emails_enabled,
+            round_to_15_min(&settings.send_time),
+        )
         .await;
     Html(SaveOkTemplate.render().unwrap())
 }
 
-pub async fn send_daily(State(state): State<AppState>, _auth: AuthUser) -> Redirect {
+pub async fn send_daily(State(state): State<AppState>, auth: AuthUser) -> Html<String> {
+    if is_send_rate_limited(&state, &auth.email) {
+        let toast = MessageRateLimitToast {
+            message: "Exceeded number of times email can be sent.".to_string(),
+        };
+        return Html(toast.render().unwrap());
+    }
+
     let quote = state.db.quotes.get_daily().await;
     info!("{:#?}", quote);
-    Redirect::to("/settings")
+    // TODO: send quote email
+
+    Html(MessageSentToast.render().unwrap())
 }
 
-pub async fn send_random(State(state): State<AppState>, _auth: AuthUser) -> Redirect {
+pub async fn send_random(State(state): State<AppState>, auth: AuthUser) -> Html<String> {
+    if is_send_rate_limited(&state, &auth.email) {
+        let toast = MessageRateLimitToast {
+            message: "Exceeded number of times email can be sent.".to_string(),
+        };
+        return Html(toast.render().unwrap());
+    }
+
     let quote = state.db.quotes.get_random().await;
     info!("{:#?}", quote);
-    Redirect::to("/settings")
+    // TODO: send quote email
+
+    Html(MessageSentToast.render().unwrap())
+}
+
+fn is_send_rate_limited(state: &AppState, email: &str) -> bool {
+    let mut entry = state
+        .sends
+        .entry(email.to_string())
+        .or_insert((1, Instant::now()));
+
+    let (count, started) = &mut *entry;
+
+    tracing::info!(
+        "rate limit check — email: {}, count: {}, elapsed: {:?}",
+        email,
+        count,
+        started.elapsed()
+    );
+
+    if started.elapsed() >= Duration::from_secs(86400) {
+        *count = 1;
+        *started = Instant::now();
+    } else if *count > 3 {
+        return true;
+    } else {
+        *count += 1;
+    }
+
+    false
 }
 
 pub async fn generate_invite_link(State(state): State<AppState>, _auth: AdminUser) -> Html<String> {
