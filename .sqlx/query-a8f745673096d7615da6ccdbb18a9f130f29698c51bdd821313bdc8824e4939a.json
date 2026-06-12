@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "INSERT OR IGNORE INTO users (email, is_admin) VALUES (?1, 1)",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": []
+  },
+  "hash": "a8f745673096d7615da6ccdbb18a9f130f29698c51bdd821313bdc8824e4939a"
+}
