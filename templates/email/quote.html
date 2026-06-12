@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body style="margin:0;padding:0;font-family:Arial,Helvetica,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="padding:40px 16px;">
+    <tr>
+      <td align="center">
+        <table width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;">
+
+          <!-- Header -->
+          <tr>
+            <td style="padding-bottom:4px;text-align:center;">
+              <span style="font-size:15px;letter-spacing:0.12em;text-transform:uppercase;">Daily Stoic</span>
+            </td>
+          </tr>
+
+          <!-- Date -->
+          <tr>
+            <td style="padding-bottom:28px;text-align:center;">
+              <span style="font-size:13px;">{{ quote.date }}</span>
+            </td>
+          </tr>
+
+          <!-- Season + Month topic -->
+          <tr>
+            <td style="padding-bottom:2px;">
+              <span style="font-size:11px;font-weight:bold;letter-spacing:0.08em;text-transform:uppercase;">{{ quote.season_topic }}</span>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding-bottom:8px;">
+              <span style="font-size:11px;letter-spacing:0.08em;text-transform:uppercase;">{{ quote.month_topic }}</span>
+            </td>
+          </tr>
+
+          <!-- Quote card -->
+          <tr>
+            <td style="border:1px solid #ccc;border-radius:6px;padding:36px 40px;">
+              <p style="margin:0 0 8px 0;font-size:11px;letter-spacing:0.15em;text-transform:uppercase;">{{ quote.title }}</p>
+              <p style="margin:0 0 24px 0;font-size:22px;line-height:1.55;font-style:italic;font-family:Georgia,serif;">&ldquo;{{ quote.quote }}&rdquo;</p>
+              <p style="margin:0;font-size:13px;">— {{ quote.quoter }}</p>
+            </td>
+          </tr>
+
+          <!-- Explanation -->
+          <tr>
+            <td style="padding:28px 8px 0 8px;">
+              <p style="margin:0;font-size:18px;line-height:1.7;font-family:Georgia,serif;">{{ quote.explanation }}</p>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="padding:40px 8px 0 8px;text-align:center;">
+              <table width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td style="padding-top:32px;border-top:1px solid #ccc;text-align:center;">
+                    <p style="margin:0 0 8px 0;font-size:11px;">Quotes and commentary from <em>The Daily Stoic</em> by Ryan Holiday.</p>
+                    <p style="margin:0;font-size:11px;">To stop receiving these emails, log in and disable them in your settings or delete your account.</p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
