@@ -52,7 +52,12 @@ make watch
 - [x] Schedule 15 min increments only
 - [x] Handle timezone conversion for scheduling
 - [x] Rate limiting
-- [ ] More logs
+- [x] More logs
+- [ ] Define `AppError` type implementing `IntoResponse` for 500 responses
+- [ ] Return `Result` from all database functions instead of panicking
+- [ ] Handle db errors in handlers with `?`
+- [ ] Handle remaining unwraps in middleware and auth extractor
 - [ ] Send login codes via email (currently logging only)
 - [ ] Send quote emails via Resend
 - [ ] Email scheduling — cron job to send quotes at user's `send_time`
+- [ ] NixOS deployment — flake, systemd service, Cloudflare tunnel
