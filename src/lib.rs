@@ -1,6 +1,7 @@
 pub mod api;
 pub mod config;
 pub mod database;
+pub mod email;
 pub mod models;
 
 pub use database::Database;
