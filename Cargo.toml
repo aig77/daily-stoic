@@ -10,6 +10,8 @@ default-run = "daily-stoic"
 
 [dependencies]
 askama = "0.16.0"
+chrono = "0.4"
+chrono-tz = "0.10"
 axum = "0.8.6"
 dotenvy = "0.15.7"
 governor = "0.10.4"

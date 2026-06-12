@@ -1,6 +1,6 @@
 use crate::models::{DateId, Quote};
 use sqlx::sqlite::SqlitePool;
-use time::OffsetDateTime;
+use chrono::{Datelike, Utc};
 
 #[derive(Clone, Debug)]
 pub struct QuotesRepository {
@@ -24,9 +24,8 @@ impl QuotesRepository {
     }
 
     pub async fn get_daily(&self) -> Option<Quote> {
-        // TODO: make this work with any timezone the request is in
-        let now = OffsetDateTime::now_local().unwrap();
-        let today = format!("{:02}-{:02}", now.month() as u8, now.day());
+        let now = Utc::now();
+        let today = format!("{:02}-{:02}", now.month(), now.day());
         let id = DateId::new(&today).ok()?;
         self.get(&id).await
     }

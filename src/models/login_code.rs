@@ -1,5 +1,5 @@
+use chrono::{DateTime, Utc};
 use sqlx::FromRow;
-use time::{Duration, OffsetDateTime, format_description::well_known::Rfc3339};
 
 const CODE_LENGTH: u32 = 5;
 
@@ -12,16 +12,17 @@ pub struct LoginCode {
 
 impl LoginCode {
     pub fn new(email: &str) -> Self {
-        let t = OffsetDateTime::now_utc() + Duration::minutes(5);
+        let t = Utc::now() + chrono::Duration::minutes(5);
         Self {
             email: email.to_string(),
             code: generate_code(),
-            expires_at: t.format(&Rfc3339).unwrap(),
+            expires_at: t.to_rfc3339(),
         }
     }
 
     pub fn is_expired(&self) -> bool {
-        OffsetDateTime::now_utc() >= OffsetDateTime::parse(&self.expires_at, &Rfc3339).unwrap()
+        let expires_at = self.expires_at.parse::<DateTime<Utc>>().unwrap();
+        Utc::now() >= expires_at
     }
 }
 
