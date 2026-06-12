@@ -1,5 +1,6 @@
 use crate::AppState;
 use crate::api::middleware::auth::{AdminUser, AuthUser};
+use crate::email::QuoteEmail;
 use crate::models::Invite;
 
 use askama::Template;
@@ -65,6 +66,10 @@ struct MessageRateLimitToast {
     message: String,
 }
 
+#[derive(Template)]
+#[template(path = "errors/send_error.html")]
+struct SendErrorToast;
+
 pub async fn settings_page(State(state): State<AppState>, auth: AuthUser) -> Html<String> {
     let user = state.db.users.get(&auth.email).await.unwrap();
 
@@ -128,9 +133,11 @@ pub async fn send_daily(State(state): State<AppState>, auth: AuthUser) -> Html<S
         return Html(toast.render().unwrap());
     }
 
-    let quote = state.db.quotes.get_daily().await;
-    info!("{:#?}", quote);
-    // TODO: send quote email
+    let quote = state.db.quotes.get_daily().await.unwrap();
+    if let Err(e) = QuoteEmail::send(vec![auth.email.clone()], &quote).await {
+        error!("{} requested daily but failed: {}", &auth.email, e);
+        return Html(SendErrorToast.render().unwrap());
+    };
 
     info!("daily sent to {}", &auth.email);
 
@@ -149,9 +156,11 @@ pub async fn send_random(State(state): State<AppState>, auth: AuthUser) -> Html<
         return Html(toast.render().unwrap());
     }
 
-    let quote = state.db.quotes.get_random().await;
-    info!("{:#?}", quote);
-    // TODO: send quote email
+    let quote = state.db.quotes.get_random().await.unwrap();
+    if let Err(e) = QuoteEmail::send(vec![auth.email.clone()], &quote).await {
+        error!("{} requested random but failed: {}", &auth.email, e);
+        return Html(SendErrorToast.render().unwrap());
+    };
 
     info!("random sent to {}", &auth.email);
 

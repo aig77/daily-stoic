@@ -3,6 +3,7 @@ use crate::api::middleware::{
     auth::ExpiredTemplate,
     sessions::{EMAIL_KEY, Session},
 };
+use crate::email::LoginCodeEmail;
 use crate::models::LoginCode;
 
 use askama::Template;
@@ -12,7 +13,7 @@ use axum::{
     response::{Html, IntoResponse},
 };
 use serde::Deserialize;
-use tracing::info;
+use tracing::{error, info};
 
 #[derive(Deserialize)]
 pub struct Login {
@@ -27,7 +28,9 @@ pub struct Verify {
 
 #[derive(Template)]
 #[template(path = "login/page.html")]
-struct PageTemplate;
+struct PageTemplate {
+    error: Option<&'static str>,
+}
 
 #[derive(Template)]
 #[template(path = "login/verify.html")]
@@ -46,7 +49,7 @@ struct ResendOkFragment {
 }
 
 pub async fn login_page() -> Html<String> {
-    Html(PageTemplate.render().unwrap())
+    Html(PageTemplate { error: None }.render().unwrap())
 }
 
 pub async fn session_expired_page() -> Html<String> {
@@ -61,18 +64,17 @@ pub async fn submit_login(State(state): State<AppState>, Form(login): Form<Login
 
         // create new code
         let login_code = LoginCode::new(&login.email);
-        let code = login_code.code.clone();
         state.db.login_codes.insert(&login_code).await;
 
-        info!("{} requested a code", &login.email);
+        // send it
+        if let Err(e) = LoginCodeEmail::send(&login_code).await {
+            error!("login code email sent to {} failed: {}", &login.email, e);
+            return Html(PageTemplate { error: Some("Failed to send login code. Please try again.") }.render().unwrap());
+        }
 
-        // TODO: replace this with sending the email with the code
-        info!("{}", code);
+        info!("code sent to {} ", &login.email);
     } else {
-        info!(
-            "User tried logging in using an email with no account: {}",
-            &login.email
-        );
+        info!("attempted login with no account: {}", &login.email);
     }
 
     let template = VerifyTemplate { email: login.email };
@@ -122,8 +124,12 @@ pub async fn resend_login_code(
     let new_login_code = LoginCode::new(&login.email);
     state.db.login_codes.insert(&new_login_code).await;
 
-    // TODO: convert to resending code via email
-    info!("resend: {}", &new_login_code.code);
+    if let Err(e) = LoginCodeEmail::send(&new_login_code).await {
+        error!("resend login code to {} failed: {}", &login.email, e);
+        return Html("<small style=\"color: var(--danger-btn-color)\">Failed to resend code. Please try again.</small>".to_string());
+    }
+
+    info!("code resent to {}", &login.email);
 
     let template = ResendOkFragment { email: login.email };
 
