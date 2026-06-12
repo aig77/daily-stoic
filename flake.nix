@@ -27,8 +27,6 @@
         package = inputs.daily-stoic.packages.${pkgs.system}.default;
         setupScript = pkgs.writeShellScript "daily-stoic-setup" ''
           set -e
-          ${pkgs.sqlx-cli}/bin/sqlx migrate run \
-            --source ${package}/share/daily-stoic/migrations
           ${package}/bin/migrate
         '';
       in {

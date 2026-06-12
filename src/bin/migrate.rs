@@ -13,6 +13,8 @@ async fn main() {
 
     let pool = SqlitePool::connect(&config.database_url).await.unwrap();
 
+    sqlx::migrate!("./migrations").run(&pool).await.unwrap();
+
     for (date, quote) in quotes {
         sqlx::query!(
             "insert or ignore into quotes (date, month_topic, season_topic, title, quote, quoter, explanation) values (?1, ?2, ?3, ?4, ?5, ?6, ?7)",
