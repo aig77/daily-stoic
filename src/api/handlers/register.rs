@@ -7,6 +7,7 @@ use axum::{
     response::{Html, IntoResponse},
 };
 use serde::Deserialize;
+use tracing::{error, info};
 
 #[derive(Deserialize)]
 pub struct Register {
@@ -40,7 +41,8 @@ struct OkTemplate;
 
 pub async fn register_page(State(state): State<AppState>, Path(id): Path<String>) -> Html<String> {
     let Some(invite) = state.db.invites.get(&id).await else {
-        // invalid page
+        // invalid id
+        error!("invalid invite id {}", &id);
         let invalid_template = ErrorTemplate {
             error: RegisterError::Invalid,
         };
@@ -48,7 +50,8 @@ pub async fn register_page(State(state): State<AppState>, Path(id): Path<String>
     };
 
     if invite.is_expired() {
-        // token expired page
+        // invite expired page
+        error!("invite expired {}", &id);
         let expired_template = ErrorTemplate {
             error: RegisterError::Expired,
         };
@@ -66,6 +69,8 @@ pub async fn submit_register(
     Form(register): Form<Register>,
 ) -> impl IntoResponse {
     let Some(invite) = state.db.invites.get(&id).await else {
+        // invalid
+        error!("invalid invite id {}", &id);
         let invalid_template = ErrorTemplate {
             error: RegisterError::Invalid,
         };
@@ -73,6 +78,8 @@ pub async fn submit_register(
     };
 
     if invite.is_expired() {
+        // expired
+        error!("invite expired {}", &id);
         let expired_template = ErrorTemplate {
             error: RegisterError::Expired,
         };
@@ -81,6 +88,7 @@ pub async fn submit_register(
 
     if state.db.users.get(&register.email).await.is_some() {
         // register page with account already exists warning
+        error!("user tried registering with account that already exists");
         return Html(PageEmailTakenTemplate.render().unwrap()).into_response();
     }
 
@@ -89,6 +97,8 @@ pub async fn submit_register(
 
     // delete invite
     state.db.invites.delete(&id).await;
+
+    info!("{} registered", &register.email);
 
     // redirect to ok page
     ([("HX-Redirect", "/register/ok")], "").into_response()

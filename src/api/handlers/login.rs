@@ -62,9 +62,12 @@ pub async fn submit_login(State(state): State<AppState>, Form(login): Form<Login
         // create new code
         let login_code = LoginCode::new(&login.email);
         let code = login_code.code.clone();
-        state.db.login_codes.insert(login_code).await;
+        state.db.login_codes.insert(&login_code).await;
 
-        info!("{}", code); // TODO: replace this with sending the email with the code
+        info!("{} requested a code", &login.email);
+
+        // TODO: replace this with sending the email with the code
+        info!("{}", code);
     } else {
         info!(
             "User tried logging in using an email with no account: {}",
@@ -94,25 +97,31 @@ pub async fn verify_login_code(
         // delete the login code
         state.db.login_codes.delete(&verify.email).await;
 
+        info!("{} verification success", &verify.email);
+
         // redirect to user settings
         ([("HX-Redirect", "/settings")], "").into_response()
     } else {
+        info!("{} verification failed", &verify.email);
+
         // with resend button
         Html(ErrorFragment.render().unwrap()).into_response()
     }
 }
 
-// TODO: fix weird logic here where it sends you a code but takes you back to the login?
 pub async fn resend_login_code(
     State(state): State<AppState>,
     Form(login): Form<Login>,
 ) -> Html<String> {
+    info!("{} requested a new code", &login.email);
+
     // delete the code
     state.db.login_codes.delete(&login.email).await;
 
     // create a new one
     let new_login_code = LoginCode::new(&login.email);
-    state.db.login_codes.insert(new_login_code.clone()).await;
+    state.db.login_codes.insert(&new_login_code).await;
+
     // TODO: convert to resending code via email
     info!("resend: {}", &new_login_code.code);
 

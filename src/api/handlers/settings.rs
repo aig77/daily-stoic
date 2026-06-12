@@ -11,7 +11,7 @@ use axum::{
 };
 use serde::Deserialize;
 use std::time::{Duration, Instant};
-use tracing::info;
+use tracing::{error, info};
 
 #[derive(Deserialize)]
 pub struct Settings {
@@ -108,9 +108,9 @@ pub async fn save_settings(
         .db
         .users
         .update(
-            auth.email,
+            &auth.email,
             emails_enabled,
-            round_to_15_min(&settings.send_time),
+            &round_to_15_min(&settings.send_time),
         )
         .await;
     Html(SaveOkTemplate.render().unwrap())
@@ -118,6 +118,10 @@ pub async fn save_settings(
 
 pub async fn send_daily(State(state): State<AppState>, auth: AuthUser) -> Html<String> {
     if is_send_rate_limited(&state, &auth.email) {
+        error!(
+            "{} exceeded number of times daily email can be sent",
+            &auth.email
+        );
         let toast = MessageRateLimitToast {
             message: "Exceeded number of times email can be sent.".to_string(),
         };
@@ -128,11 +132,17 @@ pub async fn send_daily(State(state): State<AppState>, auth: AuthUser) -> Html<S
     info!("{:#?}", quote);
     // TODO: send quote email
 
+    info!("daily sent to {}", &auth.email);
+
     Html(MessageSentToast.render().unwrap())
 }
 
 pub async fn send_random(State(state): State<AppState>, auth: AuthUser) -> Html<String> {
     if is_send_rate_limited(&state, &auth.email) {
+        error!(
+            "{} exceeded number of times random email can be sent",
+            &auth.email
+        );
         let toast = MessageRateLimitToast {
             message: "Exceeded number of times email can be sent.".to_string(),
         };
@@ -142,6 +152,8 @@ pub async fn send_random(State(state): State<AppState>, auth: AuthUser) -> Html<
     let quote = state.db.quotes.get_random().await;
     info!("{:#?}", quote);
     // TODO: send quote email
+
+    info!("random sent to {}", &auth.email);
 
     Html(MessageSentToast.render().unwrap())
 }
@@ -153,13 +165,6 @@ fn is_send_rate_limited(state: &AppState, email: &str) -> bool {
         .or_insert((1, Instant::now()));
 
     let (count, started) = &mut *entry;
-
-    tracing::info!(
-        "rate limit check — email: {}, count: {}, elapsed: {:?}",
-        email,
-        count,
-        started.elapsed()
-    );
 
     if started.elapsed() >= Duration::from_secs(86400) {
         *count = 1;
