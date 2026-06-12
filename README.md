@@ -24,40 +24,20 @@ make reset
 make watch
 ```
 
-## What's built
+## Server setup
 
+`database.json` is not included in the repo. Before starting the service for the first time, copy it to the server's state directory:
 
+```bash
+scp database.json root@your-server:/var/lib/daily-stoic/database.json
+systemctl restart daily-stoic
+```
+
+The migrate binary reads from `DATABASE_JSON_PATH` (defaults to `/var/lib/daily-stoic/database.json`) and seeds quotes on every startup — safely idempotent via `INSERT OR IGNORE`.
 
 ## TODO
 
-- [x] SQLite database with repository pattern
-- [x] Quotes seeded from JSON
-- [x] Invite-only registration with expiring invite links
-- [x] Passwordless login via OTP code
-- [x] OTP resend with rate-aware random code generation
-- [x] Session-based auth with tower-sessions
-- [x] Auth middleware with custom Axum extractors (AuthUser, AdminUser)
-- [x] Settings page (email toggle, send time)
-- [x] Admin section — generate invite links via HTMX
-- [x] Bootstrap admin user via Makefile
-- [x] Askama templates with shared base layout
-- [x] HTMX partial page updates on login, register, and settings flows
-- [x] Resend API key integration (wired, not sending yet)
-- [x] Tracing middleware
-- [x] Delete account option in settings
-- [x] Delete account confirmation (are you sure?)
-- [x] Save settings confirmation (HTMX inline response)
-- [x] Copy invite link to clipboard on click
-- [x] Nice frontend
-- [x] Schedule 15 min increments only
-- [x] Handle timezone conversion for scheduling
-- [x] Rate limiting
-- [x] More logs
 - [ ] Define `AppError` type implementing `IntoResponse` for 500 responses
 - [ ] Return `Result` from all database functions instead of panicking
 - [ ] Handle db errors in handlers with `?`
 - [ ] Handle remaining unwraps in middleware and auth extractor
-- [x] Send login codes via email (currently logging only)
-- [x] Send quote emails via Resend
-- [x] Email scheduling — cron job to send quotes at user's `send_time`
-- [ ] NixOS deployment — flake, systemd service, Cloudflare tunnel
