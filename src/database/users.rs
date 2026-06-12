@@ -58,4 +58,14 @@ impl UsersRepository {
             .await
             .unwrap();
     }
+
+    pub async fn get_scheduled_users(&self, send_time: &str) -> Vec<String> {
+        sqlx::query_scalar!(
+            "SELECT email FROM users WHERE emails_enabled = 1 AND send_time = ?1",
+            send_time
+        )
+        .fetch_all(&self.pool)
+        .await
+        .unwrap()
+    }
 }

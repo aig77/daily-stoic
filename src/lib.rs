@@ -3,6 +3,7 @@ pub mod config;
 pub mod database;
 pub mod email;
 pub mod models;
+pub mod schedule;
 
 pub use database::Database;
 
