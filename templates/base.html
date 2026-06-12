@@ -1,32 +1,92 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en">
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{% block title %}{% endblock %} — Daily Stoic</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏛️</text></svg>">
+    <script>
+      (function() {
+        var saved = localStorage.getItem('theme');
+        var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        document.documentElement.setAttribute('data-theme', saved || (prefersDark ? 'dark' : 'light'));
+      })();
+    </script>
     <script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.10/dist/htmx.min.js"
       integrity="sha384-H5SrcfygHmAuTDZphMHqBJLc3FhssKjG7w/CeCpFReSfwBWDTKpkzPP8c+cLsK+V"
       crossorigin="anonymous"></script>
     <style>
-      :root {
-        --pico-background-color: #0e0d0b;
-        --pico-color: #cdc2a8;
-        --pico-muted-color: #726753;
-        --pico-primary: #b8924f;
-        --pico-primary-hover: #cba562;
-        --pico-primary-background: #b8924f;
-        --pico-primary-hover-background: #cba562;
-        --pico-card-background-color: #181410;
-        --pico-card-border-color: #2c2720;
-        --pico-card-sectioning-background-color: #141210;
-        --pico-form-element-background-color: #111009;
-        --pico-form-element-border-color: #2c2720;
-        --pico-form-element-color: #cdc2a8;
-        --pico-border-color: #2c2720;
-        --pico-muted-border-color: #2c2720;
+      [data-theme="dark"] {
+        --pico-background-color: #141415;
+        --pico-color: #D9CDB8;
+        --pico-h1-color: #D9CDB8;
+        --pico-h2-color: #D9CDB8;
+        --pico-h3-color: #D9CDB8;
+        --pico-h4-color: #D9CDB8;
+        --pico-h5-color: #D9CDB8;
+        --pico-h6-color: #D9CDB8;
+        --pico-muted-color: #7a7870;
+        --pico-primary: #4d7f72;
+        --pico-primary-hover: #5e9485;
+        --pico-primary-background: #4d7f72;
+        --pico-primary-hover-background: #5e9485;
+        --pico-card-background-color: #1c1b1c;
+        --pico-card-border-color: #2a2828;
+        --pico-card-sectioning-background-color: #191819;
+        --pico-form-element-background-color: #111011;
+        --pico-form-element-border-color: #2a2828;
+        --pico-form-element-color: #D9CDB8;
+        --pico-border-color: #2a2828;
+        --pico-muted-border-color: #2a2828;
+        --danger-border: #3d1c1c;
+        --danger-heading: #a84040;
+        --danger-btn-border: #7a3030;
+        --danger-btn-color: #c05050;
+        --danger-btn-hover-bg: #1e0e0e;
       }
+
+      [data-theme="light"] {
+        --pico-background-color: #f0ebe3;
+        --pico-color: #1c1a17;
+        --pico-h1-color: #1c1a17;
+        --pico-h2-color: #1c1a17;
+        --pico-h3-color: #1c1a17;
+        --pico-h4-color: #1c1a17;
+        --pico-h5-color: #1c1a17;
+        --pico-h6-color: #1c1a17;
+        --pico-muted-color: #7a7570;
+        --pico-primary: #3d6b5f;
+        --pico-primary-hover: #2e5248;
+        --pico-primary-background: #3d6b5f;
+        --pico-primary-hover-background: #2e5248;
+        --pico-card-background-color: #e8e2da;
+        --pico-card-border-color: #d0c8be;
+        --pico-card-sectioning-background-color: #ede7df;
+        --pico-form-element-background-color: #f5f1eb;
+        --pico-form-element-border-color: #c8c0b6;
+        --pico-form-element-color: #1c1a17;
+        --pico-border-color: #d0c8be;
+        --pico-muted-border-color: #d0c8be;
+        --danger-border: #c8a8a8;
+        --danger-heading: #8b3030;
+        --danger-btn-border: #a84040;
+        --danger-btn-color: #8b3030;
+        --danger-btn-hover-bg: #f5e8e8;
+      }
+
+      .theme-toggle {
+        background: none;
+        border: none;
+        padding: 0.25rem 0.5rem;
+        font-size: 1.1rem;
+        cursor: pointer;
+        line-height: 1;
+        color: var(--pico-muted-color);
+      }
+
+      [data-theme="dark"] .theme-toggle::before { content: '☀'; }
+      [data-theme="light"] .theme-toggle::before { content: '☾'; }
 
       .save-ok {
         color: #6a9a6e;
@@ -40,14 +100,14 @@
       }
 
       .danger-zone {
-        border: 1px solid #3d1c1c;
+        border: 1px solid var(--danger-border);
         border-radius: var(--pico-border-radius);
         padding: 1.5rem;
         margin-top: 1rem;
       }
 
       .danger-zone h3 {
-        color: #a84040;
+        color: var(--danger-heading);
         font-size: 0.8rem;
         text-transform: uppercase;
         letter-spacing: 0.1em;
@@ -62,8 +122,8 @@
 
       .btn-danger {
         background: transparent;
-        border: 1px solid #7a3030;
-        color: #c05050;
+        border: 1px solid var(--danger-btn-border);
+        color: var(--danger-btn-color);
         border-radius: var(--pico-border-radius);
         padding: 0.5rem 1rem;
         font-size: 0.9rem;
@@ -72,8 +132,8 @@
       }
 
       .btn-danger:hover:not([disabled]) {
-        background: #1e0e0e;
-        border-color: #c05050;
+        background: var(--danger-btn-hover-bg);
+        border-color: var(--danger-btn-color);
       }
 
       .btn-danger[disabled] {
@@ -88,10 +148,22 @@
         <ul>
           <li><strong>🏛 Daily Stoic</strong></li>
         </ul>
+        <ul>
+          <li>
+            <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme"></button>
+          </li>
+        </ul>
       </nav>
     </header>
     <main class="container">
       {% block content %}{% endblock %}
     </main>
+    <script>
+      function toggleTheme() {
+        var next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', next);
+        localStorage.setItem('theme', next);
+      }
+    </script>
   </body>
 </html>
