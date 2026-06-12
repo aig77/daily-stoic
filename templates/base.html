@@ -140,6 +140,38 @@
         opacity: 0.35;
         cursor: not-allowed;
       }
+
+      #toast-container {
+        position: fixed;
+        top: 1rem;
+        right: 1rem;
+        z-index: 1000;
+      }
+
+      .toast-warning {
+        background: #7a5f00;
+        color: #fff8e1;
+        padding: 0.6rem 1rem;
+        border-radius: var(--pico-border-radius);
+        font-size: 0.875rem;
+        animation: toast-fade 4s forwards;
+      }
+
+      .toast-success {
+        background: #4d7f72;
+        color: #f0f9f7;
+        padding: 0.6rem 1rem;
+        border-radius: var(--pico-border-radius);
+        font-size: 0.875rem;
+        animation: toast-fade 4s forwards;
+      }
+
+      @keyframes toast-fade {
+        0% { opacity: 0; transform: translateX(0.5rem); }
+        10% { opacity: 1; transform: translateX(0); }
+        70% { opacity: 1; }
+        100% { opacity: 0; }
+      }
     </style>
   </head>
   <body>
@@ -155,9 +187,18 @@
         </ul>
       </nav>
     </header>
+    <div id="toast-container"></div>
     <main class="container">
       {% block content %}{% endblock %}
     </main>
+    <script>
+      document.body.addEventListener('htmx:beforeSwap', function(evt) {
+        if (evt.detail.xhr.status === 429) {
+          evt.detail.shouldSwap = true;
+          evt.detail.isError = false;
+        }
+      });
+    </script>
     <script>
       function toggleTheme() {
         var next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
