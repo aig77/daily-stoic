@@ -53,12 +53,14 @@
   <article style="margin-top: 1rem">
     <header><strong>Send quote</strong></header>
     <div style="display: flex; gap: 0.75rem">
-      <form method="post" action="/settings/send/daily" style="margin: 0">
-        <button type="submit" class="secondary outline" style="margin: 0; width: auto">Daily</button>
-      </form>
-      <form method="post" action="/settings/send/random" style="margin: 0">
-        <button type="submit" class="secondary outline" style="margin: 0; width: auto">Random</button>
-      </form>
+      <button class="secondary outline" style="margin: 0; width: auto"
+        hx-post="/settings/send/daily"
+        hx-target="#toast-container"
+        hx-swap="innerHTML">Daily</button>
+      <button class="secondary outline" style="margin: 0; width: auto"
+        hx-post="/settings/send/random"
+        hx-target="#toast-container"
+        hx-swap="innerHTML">Random</button>
     </div>
   </article>
 
