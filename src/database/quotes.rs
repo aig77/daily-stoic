@@ -12,7 +12,7 @@ impl QuotesRepository {
         QuotesRepository { pool }
     }
 
-    pub async fn get(&self, date_id: DateId) -> Option<Quote> {
+    pub async fn get(&self, date_id: &DateId) -> Option<Quote> {
         sqlx::query_as!(
             Quote,
             "SELECT * FROM quotes WHERE date = ?1",
@@ -28,7 +28,7 @@ impl QuotesRepository {
         let now = OffsetDateTime::now_local().unwrap();
         let today = format!("{:02}-{:02}", now.month() as u8, now.day());
         let id = DateId::new(&today).ok()?;
-        self.get(id).await
+        self.get(&id).await
     }
 
     pub async fn get_random(&self) -> Option<Quote> {

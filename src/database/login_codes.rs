@@ -22,12 +22,12 @@ impl LoginCodesRepository {
         .unwrap()
     }
 
-    pub async fn insert(&self, login_code: LoginCode) {
+    pub async fn insert(&self, login_code: &LoginCode) {
         sqlx::query!(
             "INSERT INTO login_codes VALUES (?1, ?2, ?3)",
-            login_code.email,
-            login_code.code,
-            login_code.expires_at
+            &login_code.email,
+            &login_code.code,
+            &login_code.expires_at
         )
         .execute(&self.pool)
         .await

@@ -25,7 +25,7 @@ impl UsersRepository {
             .unwrap();
     }
 
-    pub async fn update(&self, email: String, emails_enabled: i64, send_time: String) {
+    pub async fn update(&self, email: &str, emails_enabled: i64, send_time: &str) {
         sqlx::query!(
             "UPDATE users SET emails_enabled = ?1, send_time = ?2 WHERE email = ?3",
             emails_enabled,
@@ -44,7 +44,7 @@ impl UsersRepository {
             .unwrap();
     }
 
-    pub async fn grant_admin(&self, email: String) {
+    pub async fn grant_admin(&self, email: &str) {
         sqlx::query!("UPDATE users SET is_admin = 1 WHERE email = ?1", email)
             .execute(&self.pool)
             .await
