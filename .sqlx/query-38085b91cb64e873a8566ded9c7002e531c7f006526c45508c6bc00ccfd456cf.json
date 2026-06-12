@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "DELETE FROM login_codes WHERE email = ?1",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": []
+  },
+  "hash": "38085b91cb64e873a8566ded9c7002e531c7f006526c45508c6bc00ccfd456cf"
+}
