@@ -4,6 +4,7 @@ use std::collections::HashMap;
 
 #[tokio::main]
 async fn main() {
+    dotenvy::dotenv().ok();
     let config = Config::from_env();
     let raw = std::fs::read_to_string("database.json").unwrap();
     let quotes: HashMap<String, Quote> = serde_json::from_str(&raw).unwrap();
@@ -12,7 +13,7 @@ async fn main() {
 
     for (date, quote) in quotes {
         sqlx::query!(
-            "insert into quotes (date, month_topic, season_topic, title, quote, quoter, explanation) values (?1, ?2, ?3, ?4, ?5, ?6, ?7)",
+            "insert or ignore into quotes (date, month_topic, season_topic, title, quote, quoter, explanation) values (?1, ?2, ?3, ?4, ?5, ?6, ?7)",
             date,
             quote.title,
             quote.month_topic,
