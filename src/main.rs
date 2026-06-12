@@ -5,6 +5,7 @@ use daily_stoic::{
     api::{configure, middleware::tracing::init_tracing},
     config::Config,
     database::Database,
+    email::check_env_vars,
 };
 use dashmap::DashMap;
 use std::net::SocketAddr;
@@ -12,17 +13,20 @@ use tracing::info;
 
 #[tokio::main]
 async fn main() {
+    dotenvy::dotenv().ok();
+
     init_tracing();
     info!("Tracing initialized");
 
     let config = Config::from_env();
     info!(
-        "Server configuration retrieved: addr={}, base_url={}, database_url={}, resend_api_key(LEN)={}",
-        &config.addr,
-        &config.base_url,
-        &config.database_url,
-        &config.resend_api_key.len(),
+        "Server configuration retrieved: addr={}, base_url={}, database_url={}",
+        &config.addr, &config.base_url, &config.database_url,
     );
+
+    // to ensure email config is setup properly
+    check_env_vars();
+    info!("Required Resend env vars are configured");
 
     let db = Database::new(&config.database_url).await;
     info!("Sqlite connection established");
@@ -37,7 +41,7 @@ async fn main() {
 
     let listener = tokio::net::TcpListener::bind(&config.addr)
         .await
-        .expect("Failed to bind to address {}");
+        .unwrap_or_else(|_| panic!("Failed to bind to address {}", &config.addr));
 
     info!("Server listening at {}", &config.addr);
 
