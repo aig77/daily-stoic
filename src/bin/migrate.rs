@@ -6,7 +6,9 @@ use std::collections::HashMap;
 async fn main() {
     dotenvy::dotenv().ok();
     let config = Config::from_env();
-    let raw = std::fs::read_to_string("database.json").unwrap();
+    let db_path = std::env::var("DATABASE_JSON_PATH")
+        .unwrap_or_else(|_| "/var/lib/daily-stoic/database.json".to_string());
+    let raw = std::fs::read_to_string(&db_path).unwrap();
     let quotes: HashMap<String, Quote> = serde_json::from_str(&raw).unwrap();
 
     let pool = SqlitePool::connect(&config.database_url).await.unwrap();
@@ -21,6 +23,16 @@ async fn main() {
             quote.quote,
             quote.quoter,
             quote.explanation
+        )
+        .execute(&pool)
+        .await
+        .unwrap();
+    }
+
+    if let Ok(email) = std::env::var("BOOTSTRAP_ADMIN_EMAIL") {
+        sqlx::query!(
+            "INSERT OR IGNORE INTO users (email, is_admin) VALUES (?1, 1)",
+            email
         )
         .execute(&pool)
         .await
