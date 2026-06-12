@@ -6,7 +6,8 @@ mod users;
 use invites::InvitesRepository;
 use login_codes::LoginCodesRepository;
 use quotes::QuotesRepository;
-use sqlx::sqlite::SqlitePool;
+use sqlx::sqlite::{SqliteConnectOptions, SqlitePool};
+use std::str::FromStr;
 use users::UsersRepository;
 
 #[derive(Clone, Debug)]
@@ -19,7 +20,10 @@ pub struct Database {
 
 impl Database {
     pub async fn new(database_url: &str) -> Self {
-        let pool = SqlitePool::connect(database_url).await.unwrap();
+        let options = SqliteConnectOptions::from_str(database_url)
+            .unwrap()
+            .create_if_missing(true);
+        let pool = SqlitePool::connect_with(options).await.unwrap();
         Database {
             quotes: QuotesRepository::new(pool.clone()),
             invites: InvitesRepository::new(pool.clone()),

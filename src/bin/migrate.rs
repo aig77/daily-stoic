@@ -1,6 +1,7 @@
 use daily_stoic::{config::Config, models::Quote};
-use sqlx::sqlite::SqlitePool;
+use sqlx::sqlite::{SqliteConnectOptions, SqlitePool};
 use std::collections::HashMap;
+use std::str::FromStr;
 
 #[tokio::main]
 async fn main() {
@@ -11,7 +12,10 @@ async fn main() {
     let raw = std::fs::read_to_string(&db_path).unwrap();
     let quotes: HashMap<String, Quote> = serde_json::from_str(&raw).unwrap();
 
-    let pool = SqlitePool::connect(&config.database_url).await.unwrap();
+    let options = SqliteConnectOptions::from_str(&config.database_url)
+        .unwrap()
+        .create_if_missing(true);
+    let pool = SqlitePool::connect_with(options).await.unwrap();
 
     sqlx::migrate!("./migrations").run(&pool).await.unwrap();
 
