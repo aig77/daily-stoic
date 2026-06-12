@@ -18,6 +18,7 @@ use tracing::{error, info};
 pub struct Settings {
     pub emails_enabled: Option<String>,
     pub send_time: String,
+    pub timezone: String,
 }
 
 #[derive(Deserialize)]
@@ -29,9 +30,10 @@ pub struct DeleteForm {
 #[template(path = "settings/page.html")]
 struct PageTemplate {
     email: String,
+    is_admin: bool,
     emails_enabled: bool,
     send_time: String,
-    is_admin: bool,
+    timezone: String,
 }
 
 #[derive(Template)]
@@ -75,9 +77,10 @@ pub async fn settings_page(State(state): State<AppState>, auth: AuthUser) -> Htm
 
     let template = PageTemplate {
         email: user.email,
+        is_admin: user.is_admin == 1,
         emails_enabled: user.emails_enabled == 1,
         send_time: user.send_time,
-        is_admin: user.is_admin == 1,
+        timezone: user.timezone,
     };
 
     Html(template.render().unwrap())
@@ -116,6 +119,7 @@ pub async fn save_settings(
             &auth.email,
             emails_enabled,
             &round_to_15_min(&settings.send_time),
+            &settings.timezone,
         )
         .await;
     Html(SaveOkTemplate.render().unwrap())

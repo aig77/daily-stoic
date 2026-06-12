@@ -25,11 +25,12 @@ impl UsersRepository {
             .unwrap();
     }
 
-    pub async fn update(&self, email: &str, emails_enabled: i64, send_time: &str) {
+    pub async fn update(&self, email: &str, emails_enabled: i64, send_time: &str, timezone: &str) {
         sqlx::query!(
-            "UPDATE users SET emails_enabled = ?1, send_time = ?2 WHERE email = ?3",
+            "UPDATE users SET emails_enabled = ?1, send_time = ?2, timezone = ?3 WHERE email = ?4",
             emails_enabled,
             send_time,
+            timezone,
             email
         )
         .execute(&self.pool)
@@ -42,6 +43,13 @@ impl UsersRepository {
             .execute(&self.pool)
             .await
             .unwrap();
+    }
+
+    pub async fn get_all_enabled(&self) -> Vec<User> {
+        sqlx::query_as!(User, "SELECT * FROM users WHERE emails_enabled = 1")
+            .fetch_all(&self.pool)
+            .await
+            .unwrap()
     }
 
     pub async fn grant_admin(&self, email: &str) {

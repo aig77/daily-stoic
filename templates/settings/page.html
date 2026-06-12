@@ -21,6 +21,24 @@
         <input type="time" id="send_time_display" step="900" style="margin: 0; width: auto" />
       </div>
       <input type="hidden" id="send_time_utc" name="send_time" value="{{ send_time }}" />
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem">
+        <label for="timezone" style="margin: 0">Timezone</label>
+        <select id="timezone" name="timezone" style="margin: 0; width: auto">
+          <option value="America/New_York"     {% if timezone == "America/New_York"     %}selected{% endif %}>Eastern (ET)</option>
+          <option value="America/Chicago"      {% if timezone == "America/Chicago"      %}selected{% endif %}>Central (CT)</option>
+          <option value="America/Denver"       {% if timezone == "America/Denver"       %}selected{% endif %}>Mountain (MT)</option>
+          <option value="America/Los_Angeles"  {% if timezone == "America/Los_Angeles"  %}selected{% endif %}>Pacific (PT)</option>
+          <option value="America/Anchorage"    {% if timezone == "America/Anchorage"    %}selected{% endif %}>Alaska (AKT)</option>
+          <option value="Pacific/Honolulu"     {% if timezone == "Pacific/Honolulu"     %}selected{% endif %}>Hawaii (HT)</option>
+          <option value="Europe/London"        {% if timezone == "Europe/London"        %}selected{% endif %}>London (GMT)</option>
+          <option value="Europe/Paris"         {% if timezone == "Europe/Paris"         %}selected{% endif %}>Central Europe (CET)</option>
+          <option value="Europe/Athens"        {% if timezone == "Europe/Athens"        %}selected{% endif %}>Eastern Europe (EET)</option>
+          <option value="Asia/Dubai"           {% if timezone == "Asia/Dubai"           %}selected{% endif %}>Gulf (GT)</option>
+          <option value="Asia/Kolkata"         {% if timezone == "Asia/Kolkata"         %}selected{% endif %}>India (IST)</option>
+          <option value="Asia/Tokyo"           {% if timezone == "Asia/Tokyo"           %}selected{% endif %}>Japan (JST)</option>
+          <option value="Australia/Sydney"     {% if timezone == "Australia/Sydney"     %}selected{% endif %}>Sydney (AEST)</option>
+        </select>
+      </div>
       <div style="display: flex; align-items: center; gap: 1rem; margin-top: 0.25rem">
         <button type="submit" style="width: auto; margin-bottom: 0">Save</button>
         <span id="save-status"></span>
@@ -28,23 +46,35 @@
     </form>
     <script>
       (function () {
-        function utcToLocal(t) {
-          const [h, m] = t.split(':');
+        function utcToTz(utcTime, tz) {
+          const [h, m] = utcTime.split(':');
           const d = new Date();
           d.setUTCHours(+h, +m, 0, 0);
-          return d.toTimeString().slice(0, 5);
+          return d.toLocaleTimeString('en-US', { timeZone: tz, hour: '2-digit', minute: '2-digit', hour12: false });
         }
-        function localToUtc(t) {
-          const [h, m] = t.split(':');
-          const d = new Date();
-          d.setHours(+h, +m, 0, 0);
-          return String(d.getUTCHours()).padStart(2, '0') + ':' + String(d.getUTCMinutes()).padStart(2, '0');
+
+        function tzToUtc(localTime, tz) {
+          const [h, m] = localTime.split(':');
+          const now = new Date();
+          const dateStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}T${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:00`;
+          const tzDate = new Date(new Date(dateStr).toLocaleString('en-US', { timeZone: tz }));
+          const offset = new Date(dateStr) - tzDate;
+          const adjusted = new Date(new Date(dateStr).getTime() + offset);
+          return String(adjusted.getUTCHours()).padStart(2,'0') + ':' + String(adjusted.getUTCMinutes()).padStart(2,'0');
         }
+
         const utcInput = document.getElementById('send_time_utc');
         const localInput = document.getElementById('send_time_display');
-        localInput.value = utcToLocal(utcInput.value);
+        const tzSelect = document.getElementById('timezone');
+
+        localInput.value = utcToTz(utcInput.value, tzSelect.value);
+
+        tzSelect.addEventListener('change', function () {
+          localInput.value = utcToTz(utcInput.value, tzSelect.value);
+        });
+
         localInput.closest('form').addEventListener('htmx:configRequest', function (event) {
-          event.detail.parameters['send_time'] = localToUtc(localInput.value);
+          event.detail.parameters['send_time'] = tzToUtc(localInput.value, tzSelect.value);
         });
       })();
     </script>

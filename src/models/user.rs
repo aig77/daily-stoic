@@ -6,4 +6,5 @@ pub struct User {
     pub is_admin: i64,       // db enforces this as a bool 0,1
     pub emails_enabled: i64, // db enforces this as a bool 0,1
     pub send_time: String,
+    pub timezone: String,
 }
