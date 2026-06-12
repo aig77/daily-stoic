@@ -57,7 +57,7 @@ make watch
 - [ ] Return `Result` from all database functions instead of panicking
 - [ ] Handle db errors in handlers with `?`
 - [ ] Handle remaining unwraps in middleware and auth extractor
-- [ ] Send login codes via email (currently logging only)
-- [ ] Send quote emails via Resend
-- [ ] Email scheduling — cron job to send quotes at user's `send_time`
+- [x] Send login codes via email (currently logging only)
+- [x] Send quote emails via Resend
+- [x] Email scheduling — cron job to send quotes at user's `send_time`
 - [ ] NixOS deployment — flake, systemd service, Cloudflare tunnel

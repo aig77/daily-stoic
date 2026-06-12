@@ -16,6 +16,72 @@
 
       systems = ["x86_64-linux" "aarch64-darwin"];
 
+      flake.nixosModules.default = {
+        config,
+        lib,
+        pkgs,
+        inputs,
+        ...
+      }: let
+        cfg = config.services.daily-stoic;
+        package = inputs.daily-stoic.packages.${pkgs.system}.default;
+        setupScript = pkgs.writeShellScript "daily-stoic-setup" ''
+          set -e
+          ${pkgs.sqlx-cli}/bin/sqlx migrate run \
+            --source ${package}/share/daily-stoic/migrations
+          ${package}/bin/migrate
+        '';
+      in {
+        options.services.daily-stoic = {
+          enable = lib.mkEnableOption "daily-stoic";
+          port = lib.mkOption {
+            type = lib.types.port;
+            default = 3060;
+          };
+          baseUrl = lib.mkOption {
+            type = lib.types.str;
+            default = "";
+            description = "Base URL. If empty, BASE_URL must be set via environmentFile.";
+          };
+          environmentFile = lib.mkOption {
+            type = lib.types.path;
+            description = "Path to file containing RESEND_API_KEY and RESEND_EMAIL";
+          };
+        };
+
+        config = lib.mkIf cfg.enable {
+          users.users.daily-stoic = {
+            isSystemUser = true;
+            group = "daily-stoic";
+          };
+          users.groups.daily-stoic = {};
+
+          systemd.services.daily-stoic = {
+            description = "Daily Stoic";
+            wantedBy = ["multi-user.target"];
+            after = ["network.target"];
+            serviceConfig = {
+              ExecStartPre = "${setupScript}";
+              ExecStart = "${package}/bin/daily-stoic";
+              EnvironmentFile = cfg.environmentFile;
+              Environment =
+                [
+                  "ADDRESS=127.0.0.1:${toString cfg.port}"
+                  "DATABASE_URL=sqlite:///var/lib/daily-stoic/stoic.db"
+                  "DATABASE_JSON_PATH=/var/lib/daily-stoic/database.json"
+                ]
+                ++ lib.optional (cfg.baseUrl != "") "BASE_URL=${cfg.baseUrl}";
+              StateDirectory = "daily-stoic";
+              WorkingDirectory = "/var/lib/daily-stoic";
+              User = "daily-stoic";
+              Group = "daily-stoic";
+              Restart = "on-failure";
+              RestartSec = "5s";
+            };
+          };
+        };
+      };
+
       perSystem = {system, ...}: let
         pkgs = import inputs.nixpkgs {
           inherit system;
@@ -29,7 +95,14 @@
           rustc = rustToolchain;
         };
       in {
-        packages.default = naerskLib.buildPackage {src = ./.;};
+        packages.default = naerskLib.buildPackage {
+          src = ./.;
+          SQLX_OFFLINE = "true";
+          postInstall = ''
+            mkdir -p $out/share/daily-stoic
+            cp -r $src/migrations $out/share/daily-stoic/
+          '';
+        };
 
         devShells.default = pkgs.mkShell {
           packages = with pkgs; [
