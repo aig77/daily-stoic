@@ -98,6 +98,30 @@ fn get_random_emoji() -> &'static str {
     EMOJIS[rand]
 }
 
+#[derive(Template)]
+#[template(path = "email/register_alert.html")]
+struct RegisterAlertTemplate<'a> {
+    registered_email: &'a str,
+}
+
+pub struct RegisterAlertEmail;
+
+impl RegisterAlertEmail {
+    pub async fn send(registered_email: &str, admin_emails: Vec<String>) -> Result<()> {
+        let from = get_from();
+        let resend = Resend::new(&std::env::var("RESEND_API_KEY").unwrap());
+
+        let subject = "New email registered".to_string();
+        let html = RegisterAlertTemplate { registered_email }.render().unwrap();
+
+        let email = CreateEmailBaseOptions::new(from, admin_emails, subject).with_html(&html);
+
+        resend.emails.send(email).await?;
+
+        Ok(())
+    }
+}
+
 pub fn check_env_vars() {
     let key = std::env::var("RESEND_API_KEY").expect("Missing required env var RESEND_API_KEY");
     std::env::var("RESEND_EMAIL").expect("Missing required env var RESEND_EMAIL");

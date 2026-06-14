@@ -68,4 +68,11 @@ impl UsersRepository {
         .await
         .unwrap()
     }
+
+    pub async fn get_admins(&self) -> Vec<String> {
+        sqlx::query_scalar!("SELECT email FROM users WHERE is_admin = 1")
+            .fetch_all(&self.pool)
+            .await
+            .unwrap()
+    }
 }

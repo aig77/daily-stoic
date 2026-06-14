@@ -1,4 +1,5 @@
 use crate::AppState;
+use crate::email::RegisterAlertEmail;
 
 use askama::Template;
 use axum::{
@@ -99,6 +100,14 @@ pub async fn submit_register(
     state.db.invites.delete(&id).await;
 
     info!("{} registered", &register.email);
+
+    let admins = state.db.users.get_admins().await;
+
+    if !admins.is_empty()
+        && let Err(e) = RegisterAlertEmail::send(&register.email, admins).await
+    {
+        error!("failed to send register alert email: {}", e);
+    }
 
     // redirect to ok page
     ([("HX-Redirect", "/register/ok")], "").into_response()

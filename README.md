@@ -37,10 +37,11 @@ The migrate binary reads from `DATABASE_JSON_PATH` (defaults to `/var/lib/daily-
 
 ## TODO
 
-- [ ] Notification email to admins when a new user signs up
-- [ ] Captcha after clicking login
+- [x] Notification email to admins when a new user signs up
 - [ ] Add limit to number of times people can change the schedule to 3/day
+- [ ] Title and monthly theme are flipped positionally in template
 - [ ] Define `AppError` type implementing `IntoResponse` for 500 responses
 - [ ] Return `Result` from all database functions instead of panicking
 - [ ] Handle db errors in handlers with `?`
 - [ ] Handle remaining unwraps in middleware and auth extractor
+- [ ] Captcha after clicking login
