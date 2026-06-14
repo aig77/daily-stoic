@@ -13,8 +13,11 @@ pub async fn init_email_scheduler(db: Database) -> Result<(), JobSchedulerError>
             let db = db.clone();
             Box::pin(async move {
                 let now = Utc::now();
+
                 let send_time = format!("{:02}:{:02}", now.hour(), (now.minute() / 15) * 15);
+
                 let today = format!("{:02}-{:02}", now.month(), now.day());
+
                 let date_id = match DateId::new(&today) {
                     Ok(id) => id,
                     Err(e) => {
@@ -22,11 +25,22 @@ pub async fn init_email_scheduler(db: Database) -> Result<(), JobSchedulerError>
                         return;
                     }
                 };
+
                 let Some(quote) = db.quotes.get(&date_id).await else {
                     return;
                 };
+
                 let recipients = db.users.get_scheduled_users(&send_time).await;
-                info!("Sending emails to {} recipients", recipients.len());
+
+                let recipients_count = recipients.len();
+
+                if recipients_count == 0 {
+                    info!("No recipients scheduled at this time.");
+                    return;
+                }
+
+                info!("Sending emails to {} recipients", recipients_count);
+
                 if let Err(e) = QuoteEmail::send_batch(recipients, &quote).await {
                     error!("Failed to send scheduled emails: {}", e);
                 }
