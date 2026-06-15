@@ -23,9 +23,9 @@ async fn main() {
         sqlx::query!(
             "insert or ignore into quotes (date, month_topic, season_topic, title, quote, quoter, explanation) values (?1, ?2, ?3, ?4, ?5, ?6, ?7)",
             date,
-            quote.title,
             quote.month_topic,
             quote.season_topic,
+            quote.title,
             quote.quote,
             quote.quoter,
             quote.explanation
