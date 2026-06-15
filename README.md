@@ -4,7 +4,7 @@ Invite-only web app for receiving daily stoic quotes via email. Built with Rust,
 
 ## Setup
 
-Copy `.env.example` to `.env` and fill in the values, then:
+Copy `.env.example` to `.env` and fill in the values. `DATABASE_JSON_PATH` points to the quotes source file — for local development use `./database.json`. Then:
 
 ```bash
 make setup
@@ -38,8 +38,8 @@ The migrate binary reads from `DATABASE_JSON_PATH` (defaults to `/var/lib/daily-
 ## TODO
 
 - [x] Notification email to admins when a new user signs up
+- [x] Title and monthly theme are flipped positionally in template
 - [ ] Add limit to number of times people can change the schedule to 3/day
-- [ ] Title and monthly theme are flipped positionally in template
 - [ ] Define `AppError` type implementing `IntoResponse` for 500 responses
 - [ ] Return `Result` from all database functions instead of panicking
 - [ ] Handle db errors in handlers with `?`
