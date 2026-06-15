@@ -138,7 +138,7 @@ pub async fn send_daily(State(state): State<AppState>, auth: AuthUser) -> Html<S
     }
 
     let quote = state.db.quotes.get_daily().await.unwrap();
-    if let Err(e) = QuoteEmail::send(vec![auth.email.clone()], &quote).await {
+    if let Err(e) = QuoteEmail::send(vec![auth.email.clone()], &quote, &state.config.base_url).await {
         error!("{} requested daily but failed: {}", &auth.email, e);
         return Html(SendErrorToast.render().unwrap());
     };
@@ -161,7 +161,7 @@ pub async fn send_random(State(state): State<AppState>, auth: AuthUser) -> Html<
     }
 
     let quote = state.db.quotes.get_random().await.unwrap();
-    if let Err(e) = QuoteEmail::send(vec![auth.email.clone()], &quote).await {
+    if let Err(e) = QuoteEmail::send(vec![auth.email.clone()], &quote, &state.config.base_url).await {
         error!("{} requested random but failed: {}", &auth.email, e);
         return Html(SendErrorToast.render().unwrap());
     };

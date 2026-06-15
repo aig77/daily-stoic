@@ -13,18 +13,19 @@ const EMOJIS: [&str; 10] = ["📚", "📖", "✨", "💭", "🧠", "🎯", "🔥
 #[template(path = "email/quote.html")]
 struct QuoteEmailTemplate<'a> {
     quote: &'a Quote,
+    base_url: &'a str,
 }
 
 pub struct QuoteEmail;
 
 impl QuoteEmail {
     // to: Vec<String> because same email can have multiple recipients
-    pub async fn send(to: Vec<String>, quote: &Quote) -> Result<()> {
+    pub async fn send(to: Vec<String>, quote: &Quote, base_url: &str) -> Result<()> {
         let from = get_from();
         let resend = Resend::new(&std::env::var("RESEND_API_KEY").unwrap());
 
         let subject = format!("{} {}", get_random_emoji(), &quote.title);
-        let html = QuoteEmailTemplate { quote }.render().unwrap();
+        let html = QuoteEmailTemplate { quote, base_url }.render().unwrap();
 
         let email = CreateEmailBaseOptions::new(from, to, subject).with_html(&html);
 
@@ -33,12 +34,12 @@ impl QuoteEmail {
         Ok(())
     }
 
-    pub async fn send_batch(recipients: Vec<String>, quote: &Quote) -> Result<()> {
+    pub async fn send_batch(recipients: Vec<String>, quote: &Quote, base_url: &str) -> Result<()> {
         let from = get_from();
         let resend = Resend::new(&std::env::var("RESEND_API_KEY").unwrap());
 
         let subject = format!("{} {}", get_random_emoji(), &quote.title);
-        let html = QuoteEmailTemplate { quote }.render().unwrap();
+        let html = QuoteEmailTemplate { quote, base_url }.render().unwrap();
 
         let emails: Vec<_> = recipients
             .into_iter()
@@ -86,11 +87,8 @@ impl LoginCodeEmail {
 }
 
 fn get_from() -> String {
-    let s = std::env::var("RESEND_EMAIL")
+    std::env::var("RESEND_EMAIL")
         .expect("Required env var RESEND_EMAIL")
-        .to_string();
-    info!("from {}", s);
-    s
 }
 
 fn get_random_emoji() -> &'static str {
