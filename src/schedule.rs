@@ -1,16 +1,16 @@
-use crate::Database;
+use crate::AppState;
 use crate::email::QuoteEmail;
 use crate::models::DateId;
 use chrono::{Datelike, Timelike, Utc};
 use tokio_cron_scheduler::{Job, JobScheduler, JobSchedulerError};
 use tracing::{error, info};
 
-pub async fn init_email_scheduler(db: Database) -> Result<(), JobSchedulerError> {
+pub async fn init_email_scheduler(state: AppState) -> Result<(), JobSchedulerError> {
     let scheduler = JobScheduler::new().await.unwrap();
 
     scheduler
         .add(Job::new_async("0 0,15,30,45 * * * *", move |_uuid, _l| {
-            let db = db.clone();
+            let state = state.clone();
             Box::pin(async move {
                 let now = Utc::now();
 
@@ -26,11 +26,11 @@ pub async fn init_email_scheduler(db: Database) -> Result<(), JobSchedulerError>
                     }
                 };
 
-                let Some(quote) = db.quotes.get(&date_id).await else {
+                let Some(quote) = state.db.quotes.get(&date_id).await else {
                     return;
                 };
 
-                let recipients = db.users.get_scheduled_users(&send_time).await;
+                let recipients = state.db.users.get_scheduled_users(&send_time).await;
 
                 let recipients_count = recipients.len();
 
@@ -41,7 +41,7 @@ pub async fn init_email_scheduler(db: Database) -> Result<(), JobSchedulerError>
 
                 info!("Sending emails to {} recipients", recipients_count);
 
-                if let Err(e) = QuoteEmail::send_batch(recipients, &quote).await {
+                if let Err(e) = QuoteEmail::send_batch(recipients, &quote, &state.config.base_url).await {
                     error!("Failed to send scheduled emails: {}", e);
                 }
             })

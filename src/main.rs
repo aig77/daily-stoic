@@ -32,14 +32,14 @@ async fn main() {
     let db = Database::new(&config.database_url).await;
     info!("Sqlite connection established");
 
-    init_email_scheduler(db.clone()).await.unwrap();
-    info!("Email scheduler initialized: listening every 15 minutes");
-
     let state = AppState {
         config: config.clone(),
         db,
         sends: Arc::new(DashMap::new()),
     };
+
+    init_email_scheduler(state.clone()).await.unwrap();
+    info!("Email scheduler initialized: listening every 15 minutes");
 
     let app = configure().with_state(state);
 
