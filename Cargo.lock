@@ -507,6 +507,7 @@ dependencies = [
 name = "daily-stoic"
 version = "0.1.0"
 dependencies = [
+ "anyhow",
  "askama",
  "axum",
  "chrono",

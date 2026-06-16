@@ -11,7 +11,7 @@ impl LoginCodesRepository {
         LoginCodesRepository { pool }
     }
 
-    pub async fn get(&self, email: &str) -> Option<LoginCode> {
+    pub async fn get(&self, email: &str) -> Result<Option<LoginCode>, sqlx::Error> {
         sqlx::query_as!(
             LoginCode,
             "SELECT * FROM login_codes WHERE email = ?1",
@@ -19,10 +19,9 @@ impl LoginCodesRepository {
         )
         .fetch_optional(&self.pool)
         .await
-        .unwrap()
     }
 
-    pub async fn insert(&self, login_code: &LoginCode) {
+    pub async fn insert(&self, login_code: &LoginCode) -> Result<(), sqlx::Error> {
         sqlx::query!(
             "INSERT INTO login_codes VALUES (?1, ?2, ?3)",
             &login_code.email,
@@ -30,14 +29,16 @@ impl LoginCodesRepository {
             &login_code.expires_at
         )
         .execute(&self.pool)
-        .await
-        .unwrap();
+        .await?;
+
+        Ok(())
     }
 
-    pub async fn delete(&self, email: &str) {
+    pub async fn delete(&self, email: &str) -> Result<(), sqlx::Error> {
         sqlx::query!("DELETE FROM login_codes WHERE email = ?1", email)
             .execute(&self.pool)
-            .await
-            .unwrap();
+            .await?;
+
+        Ok(())
     }
 }

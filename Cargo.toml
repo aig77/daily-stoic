@@ -39,6 +39,7 @@ tracing-subscriber = { version = "0.3.23", features = ["env-filter"] }
 uuid = { version = "1.23.3", features = ["v4"] }
 dashmap = "6.2.1"
 tokio-cron-scheduler = "0.15.1"
+anyhow = "1.0.102"
 
 [dev-dependencies]
 tower = "0.5"

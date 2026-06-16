@@ -11,21 +11,27 @@ impl UsersRepository {
         Self { pool }
     }
 
-    pub async fn get(&self, email: &str) -> Option<User> {
+    pub async fn get(&self, email: &str) -> Result<Option<User>, sqlx::Error> {
         sqlx::query_as!(User, "SELECT * FROM users WHERE email = ?1", email)
             .fetch_optional(&self.pool)
             .await
-            .unwrap()
     }
 
-    pub async fn insert(&self, email: &str) {
+    pub async fn insert(&self, email: &str) -> Result<(), sqlx::Error> {
         sqlx::query!("INSERT INTO users (email) VALUES (?1)", email,)
             .execute(&self.pool)
-            .await
-            .unwrap();
+            .await?;
+
+        Ok(())
     }
 
-    pub async fn update(&self, email: &str, emails_enabled: i64, send_time: &str, timezone: &str) {
+    pub async fn update(
+        &self,
+        email: &str,
+        emails_enabled: i64,
+        send_time: &str,
+        timezone: &str,
+    ) -> Result<(), sqlx::Error> {
         sqlx::query!(
             "UPDATE users SET emails_enabled = ?1, send_time = ?2, timezone = ?3 WHERE email = ?4",
             emails_enabled,
@@ -34,45 +40,49 @@ impl UsersRepository {
             email
         )
         .execute(&self.pool)
-        .await
-        .unwrap();
+        .await?;
+
+        Ok(())
     }
 
-    pub async fn delete(&self, email: &str) {
+    pub async fn delete(&self, email: &str) -> Result<(), sqlx::Error> {
         sqlx::query!("DELETE FROM users WHERE email = ?1", email)
             .execute(&self.pool)
-            .await
-            .unwrap();
+            .await?;
+
+        Ok(())
     }
 
-    pub async fn get_all_enabled(&self) -> Vec<User> {
-        sqlx::query_as!(User, "SELECT * FROM users WHERE emails_enabled = 1")
-            .fetch_all(&self.pool)
-            .await
-            .unwrap()
+    pub async fn get_all_enabled(&self) -> Result<Vec<User>, sqlx::Error> {
+        Ok(
+            sqlx::query_as!(User, "SELECT * FROM users WHERE emails_enabled = 1")
+                .fetch_all(&self.pool)
+                .await?,
+        )
     }
 
-    pub async fn grant_admin(&self, email: &str) {
+    pub async fn grant_admin(&self, email: &str) -> Result<(), sqlx::Error> {
         sqlx::query!("UPDATE users SET is_admin = 1 WHERE email = ?1", email)
             .execute(&self.pool)
-            .await
-            .unwrap();
+            .await?;
+
+        Ok(())
     }
 
-    pub async fn get_scheduled_users(&self, send_time: &str) -> Vec<String> {
-        sqlx::query_scalar!(
+    pub async fn get_scheduled_users(&self, send_time: &str) -> Result<Vec<String>, sqlx::Error> {
+        Ok(sqlx::query_scalar!(
             "SELECT email FROM users WHERE emails_enabled = 1 AND send_time = ?1",
             send_time
         )
         .fetch_all(&self.pool)
-        .await
-        .unwrap()
+        .await?)
     }
 
-    pub async fn get_admins(&self) -> Vec<String> {
-        sqlx::query_scalar!("SELECT email FROM users WHERE is_admin = 1")
-            .fetch_all(&self.pool)
-            .await
-            .unwrap()
+    pub async fn get_admins(&self) -> Result<Vec<String>, sqlx::Error> {
+        Ok(
+            sqlx::query_scalar!("SELECT email FROM users WHERE is_admin = 1")
+                .fetch_all(&self.pool)
+                .await?,
+        )
     }
 }

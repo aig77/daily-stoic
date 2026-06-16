@@ -1,6 +1,6 @@
 use crate::models::{DateId, Quote};
-use sqlx::sqlite::SqlitePool;
 use chrono::{Datelike, Utc};
+use sqlx::sqlite::SqlitePool;
 
 #[derive(Clone, Debug)]
 pub struct QuotesRepository {
@@ -12,7 +12,7 @@ impl QuotesRepository {
         QuotesRepository { pool }
     }
 
-    pub async fn get(&self, date_id: &DateId) -> Option<Quote> {
+    pub async fn get(&self, date_id: &DateId) -> Result<Option<Quote>, sqlx::Error> {
         sqlx::query_as!(
             Quote,
             "SELECT * FROM quotes WHERE date = ?1",
@@ -20,20 +20,20 @@ impl QuotesRepository {
         )
         .fetch_optional(&self.pool)
         .await
-        .unwrap()
     }
 
-    pub async fn get_daily(&self) -> Option<Quote> {
+    pub async fn get_daily(&self) -> Result<Option<Quote>, sqlx::Error> {
         let now = Utc::now();
         let today = format!("{:02}-{:02}", now.month(), now.day());
-        let id = DateId::new(&today).ok()?;
+        let Ok(id) = DateId::new(&today) else {
+            return Ok(None);
+        };
         self.get(&id).await
     }
 
-    pub async fn get_random(&self) -> Option<Quote> {
+    pub async fn get_random(&self) -> Result<Option<Quote>, sqlx::Error> {
         sqlx::query_as!(Quote, "SELECT * FROM quotes ORDER BY RANDOM() LIMIT 1")
             .fetch_optional(&self.pool)
             .await
-            .unwrap()
     }
 }
