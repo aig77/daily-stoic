@@ -109,6 +109,8 @@
             cargo-watch
             sqlite
             sqlx-cli
+            openssl.dev
+            pkg-config
           ];
 
           RUST_BACKTRACE = 1;
