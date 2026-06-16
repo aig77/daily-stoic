@@ -18,6 +18,7 @@ pub async fn get_quote_by_id(
         .quotes
         .get(&id)
         .await
+        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?
         .map(Json)
         .ok_or(StatusCode::NOT_FOUND)
 }
@@ -28,6 +29,7 @@ pub async fn get_daily_quote(State(state): State<AppState>) -> Result<Json<Quote
         .quotes
         .get_daily()
         .await
+        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?
         .map(Json)
         .ok_or(StatusCode::NOT_FOUND)
 }
@@ -38,6 +40,7 @@ pub async fn get_random_quote(State(state): State<AppState>) -> Result<Json<Quot
         .quotes
         .get_random()
         .await
+        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?
         .map(Json)
         .ok_or(StatusCode::NOT_FOUND)
 }
