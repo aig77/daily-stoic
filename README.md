@@ -44,5 +44,5 @@ The migrate binary reads from `DATABASE_JSON_PATH` (defaults to `/var/lib/daily-
 - [x] Define `AppError` type implementing `IntoResponse` for 500 responses
 - [x] Return `Result` from all database functions instead of panicking
 - [x] Handle db errors in handlers with `?`
-- [ ] Handle remaining unwraps in middleware and auth extractor
+- [x] Handle remaining unwraps in middleware and auth extractor
 - [ ] Captcha after clicking login

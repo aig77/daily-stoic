@@ -108,7 +108,10 @@ pub async fn verify_login_code(
         && !login_code.is_expired()
     {
         // create session
-        session.insert(EMAIL_KEY, &verify.email).await.unwrap();
+        if let Err(e) = session.insert(EMAIL_KEY, &verify.email).await {
+            error!("failed to create session for {}: {}", &verify.email, e);
+            return Ok(([("HX-Redirect", "/session-expired")], "").into_response());
+        }
 
         // delete the login code
         state.db.login_codes.delete(&verify.email).await?;

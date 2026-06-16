@@ -33,7 +33,11 @@ impl FromRequestParts<AppState> for AuthUser {
     ) -> Result<Self, Self::Rejection> {
         // session lives in request extensions, not passed directly
         let session = Session::from_request_parts(parts, state).await.unwrap();
-        match session.get::<String>(EMAIL_KEY).await.unwrap() {
+        match session
+            .get::<String>(EMAIL_KEY)
+            .await
+            .map_err(|_| expired_response())?
+        {
             Some(email) => Ok(AuthUser { email }),
             None => Err(expired_response()),
         }
@@ -66,7 +70,11 @@ impl FromRequestParts<AppState> for AdminUser {
         state: &AppState,
     ) -> Result<Self, Self::Rejection> {
         let session = Session::from_request_parts(parts, state).await.unwrap();
-        let Some(email) = session.get::<String>(EMAIL_KEY).await.unwrap() else {
+        let Some(email) = session
+            .get::<String>(EMAIL_KEY)
+            .await
+            .map_err(|_| AdminRejection::Expired)?
+        else {
             return Err(AdminRejection::Expired);
         };
 
