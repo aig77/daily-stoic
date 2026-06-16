@@ -2,10 +2,12 @@ pub mod api;
 pub mod config;
 pub mod database;
 pub mod email;
+pub mod errors;
 pub mod models;
 pub mod schedule;
 
 pub use database::Database;
+pub use errors::{PageError, ToastError};
 
 use dashmap::DashMap;
 use std::sync::Arc;
