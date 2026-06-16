@@ -11,10 +11,7 @@
     </hgroup>
     <form hx-post="/login" hx-target="body" hx-swap="outerHTML">
       <input type="email" name="email" autocomplete="email" required autofocus style="text-align: center" />
-      {% if let Some(err) = error %}
-      <small style="color: var(--danger-btn-color); display: block; text-align: center;">{{ err }}</small>
-      {% endif %}
-      <button type="submit">Send Code</button>
+<button type="submit">Send Code</button>
     </form>
   </article>
 </div>

@@ -1,15 +1,11 @@
 use crate::AppState;
 use crate::api::middleware::auth::{AdminUser, AuthUser};
 use crate::email::QuoteEmail;
+use crate::errors::{PageError, ToastError};
 use crate::models::Invite;
 
 use askama::Template;
-use axum::{
-    Form,
-    extract::State,
-    http::StatusCode,
-    response::{Html, IntoResponse},
-};
+use axum::{Form, extract::State, response::Html};
 use serde::Deserialize;
 use std::time::{Duration, Instant};
 use tracing::{error, info};
@@ -37,10 +33,6 @@ struct PageTemplate {
 }
 
 #[derive(Template)]
-#[template(path = "settings/page_admin.html")]
-struct AdminTemplate;
-
-#[derive(Template)]
 #[template(path = "settings/delete_ok.html")]
 struct DeletedTemplate;
 
@@ -59,21 +51,27 @@ struct InviteOkTemplate {
 }
 
 #[derive(Template)]
-#[template(path = "errors/message_sent.html")]
-struct MessageSentToast;
-
-#[derive(Template)]
-#[template(path = "errors/rate_limit.html")]
-struct MessageRateLimitToast {
-    message: String,
+#[template(path = "toasts/success.html")]
+struct SuccessToast<'a> {
+    message: &'a str,
 }
 
 #[derive(Template)]
-#[template(path = "errors/send_error.html")]
-struct SendErrorToast;
+#[template(path = "toasts/warning.html")]
+struct WarningToast<'a> {
+    message: &'a str,
+}
 
-pub async fn settings_page(State(state): State<AppState>, auth: AuthUser) -> Html<String> {
-    let user = state.db.users.get(&auth.email).await.unwrap();
+pub async fn settings_page(
+    State(state): State<AppState>,
+    auth: AuthUser,
+) -> Result<Html<String>, PageError> {
+    let user = state
+        .db
+        .users
+        .get(&auth.email)
+        .await?
+        .ok_or_else(|| anyhow::anyhow!("user not found"))?;
 
     let template = PageTemplate {
         email: user.email,
@@ -83,7 +81,7 @@ pub async fn settings_page(State(state): State<AppState>, auth: AuthUser) -> Htm
         timezone: user.timezone,
     };
 
-    Html(template.render().unwrap())
+    Ok(Html(template.render().unwrap()))
 }
 
 fn round_to_15_min(time: &str) -> String {
@@ -106,7 +104,7 @@ pub async fn save_settings(
     State(state): State<AppState>,
     auth: AuthUser,
     Form(settings): Form<Settings>,
-) -> Html<String> {
+) -> Result<Html<String>, ToastError> {
     let emails_enabled = if settings.emails_enabled.is_some() {
         1
     } else {
@@ -121,54 +119,84 @@ pub async fn save_settings(
             &round_to_15_min(&settings.send_time),
             &settings.timezone,
         )
-        .await;
-    Html(SaveOkTemplate.render().unwrap())
+        .await?;
+    Ok(Html(SaveOkTemplate.render().unwrap()))
 }
 
-pub async fn send_daily(State(state): State<AppState>, auth: AuthUser) -> Html<String> {
+pub async fn send_daily(
+    State(state): State<AppState>,
+    auth: AuthUser,
+) -> Result<Html<String>, ToastError> {
     if is_send_rate_limited(&state, &auth.email) {
         error!(
             "{} exceeded number of times daily email can be sent",
             &auth.email
         );
-        let toast = MessageRateLimitToast {
-            message: "Exceeded number of times email can be sent.".to_string(),
+        let toast = WarningToast {
+            message: "Exceeded number of times email can be sent.",
         };
-        return Html(toast.render().unwrap());
+        return Ok(Html(toast.render().unwrap()));
     }
 
-    let quote = state.db.quotes.get_daily().await.unwrap();
-    if let Err(e) = QuoteEmail::send(vec![auth.email.clone()], &quote, &state.config.base_url).await {
+    let quote = state
+        .db
+        .quotes
+        .get_daily()
+        .await?
+        .ok_or_else(|| anyhow::anyhow!("quote not found"))?;
+
+    if let Err(e) = QuoteEmail::send(vec![auth.email.clone()], &quote, &state.config.base_url).await
+    {
         error!("{} requested daily but failed: {}", &auth.email, e);
-        return Html(SendErrorToast.render().unwrap());
+        let toast = WarningToast {
+            message: "Failed to send email. Please try again.",
+        };
+        return Ok(Html(toast.render().unwrap()));
     };
 
     info!("daily sent to {}", &auth.email);
-
-    Html(MessageSentToast.render().unwrap())
+    let toast = SuccessToast {
+        message: "Message sent!",
+    };
+    Ok(Html(toast.render().unwrap()))
 }
 
-pub async fn send_random(State(state): State<AppState>, auth: AuthUser) -> Html<String> {
+pub async fn send_random(
+    State(state): State<AppState>,
+    auth: AuthUser,
+) -> Result<Html<String>, ToastError> {
     if is_send_rate_limited(&state, &auth.email) {
         error!(
             "{} exceeded number of times random email can be sent",
             &auth.email
         );
-        let toast = MessageRateLimitToast {
-            message: "Exceeded number of times email can be sent.".to_string(),
+        let toast = WarningToast {
+            message: "Exceeded number of times email can be sent.",
         };
-        return Html(toast.render().unwrap());
+        return Ok(Html(toast.render().unwrap()));
     }
 
-    let quote = state.db.quotes.get_random().await.unwrap();
-    if let Err(e) = QuoteEmail::send(vec![auth.email.clone()], &quote, &state.config.base_url).await {
+    let quote = state
+        .db
+        .quotes
+        .get_random()
+        .await?
+        .ok_or_else(|| anyhow::anyhow!("quote not found"))?;
+
+    if let Err(e) = QuoteEmail::send(vec![auth.email.clone()], &quote, &state.config.base_url).await
+    {
         error!("{} requested random but failed: {}", &auth.email, e);
-        return Html(SendErrorToast.render().unwrap());
+        let toast = WarningToast {
+            message: "Failed to send email. Please try again.",
+        };
+        return Ok(Html(toast.render().unwrap()));
     };
 
     info!("random sent to {}", &auth.email);
-
-    Html(MessageSentToast.render().unwrap())
+    let toast = SuccessToast {
+        message: "Message sent!",
+    };
+    Ok(Html(toast.render().unwrap()))
 }
 
 fn is_send_rate_limited(state: &AppState, email: &str) -> bool {
@@ -191,11 +219,14 @@ fn is_send_rate_limited(state: &AppState, email: &str) -> bool {
     false
 }
 
-pub async fn generate_invite_link(State(state): State<AppState>, _auth: AdminUser) -> Html<String> {
+pub async fn generate_invite_link(
+    State(state): State<AppState>,
+    _auth: AdminUser,
+) -> Result<Html<String>, ToastError> {
     let invite = Invite::default();
-    state.db.invites.insert(&invite).await;
+    state.db.invites.insert(&invite).await?;
     let url = invite_link(&state.config.base_url, &invite);
-    Html(InviteOkTemplate { url }.render().unwrap())
+    Ok(Html(InviteOkTemplate { url }.render().unwrap()))
 }
 
 fn invite_link(base_url: &str, invite: &Invite) -> String {
@@ -210,10 +241,16 @@ pub async fn delete_user(
     State(state): State<AppState>,
     auth: AuthUser,
     Form(body): Form<DeleteForm>,
-) -> impl IntoResponse {
+) -> Result<Html<String>, ToastError> {
     if body.confirm.as_deref() != Some("memento mori") {
-        return StatusCode::UNPROCESSABLE_ENTITY.into_response();
+        return Ok(Html(
+            WarningToast {
+                message: "Invalid entry.",
+            }
+            .render()
+            .unwrap(),
+        ));
     }
-    state.db.users.delete(&auth.email).await;
-    Html(DeletedTemplate.render().unwrap()).into_response()
+    state.db.users.delete(&auth.email).await?;
+    Ok(Html(DeletedTemplate.render().unwrap()))
 }

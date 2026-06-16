@@ -1,5 +1,6 @@
 use crate::AppState;
 use crate::email::RegisterAlertEmail;
+use crate::errors::ToastError;
 
 use askama::Template;
 use axum::{
@@ -17,50 +18,58 @@ pub struct Register {
 
 #[derive(Template)]
 #[template(path = "register/page.html")]
-struct PageTemplate {
-    id: String,
+struct PageTemplate<'a> {
+    id: &'a str,
 }
 
 #[derive(Template)]
 #[template(path = "register/page_email_taken.html")]
 struct PageEmailTakenTemplate;
 
-enum RegisterError {
-    Invalid,
-    Expired,
-}
-
 #[derive(Template)]
-#[template(path = "register/error.html")]
-struct ErrorTemplate {
-    error: RegisterError,
+#[template(path = "errors/page.html")]
+struct ErrorTemplate<'a> {
+    message: &'a str,
 }
 
 #[derive(Template)]
 #[template(path = "register/ok.html")]
 struct OkTemplate;
 
-pub async fn register_page(State(state): State<AppState>, Path(id): Path<String>) -> Html<String> {
-    let Some(invite) = state.db.invites.get(&id).await else {
+pub async fn register_page(
+    State(state): State<AppState>,
+    Path(id): Path<String>,
+) -> Result<Html<String>, ToastError> {
+    let Some(invite) = state.db.invites.get(&id).await? else {
         // invalid id
         error!("invalid invite id {}", &id);
-        let invalid_template = ErrorTemplate {
-            error: RegisterError::Invalid,
-        };
-        return Html(invalid_template.render().unwrap());
+        return Ok(
+            Html(
+                ErrorTemplate { 
+                    message: "This invite link is invalid. Contact an admin if you would like to register."
+                }
+                .render()
+                .unwrap()
+            )
+        );
+        
     };
 
     if invite.is_expired() {
         // invite expired page
         error!("invite expired {}", &id);
-        let expired_template = ErrorTemplate {
-            error: RegisterError::Expired,
-        };
-        Html(expired_template.render().unwrap())
+        Ok(
+            Html(
+                ErrorTemplate { 
+                    message: "This invite link has expired. Contact an admin if you would like to register."
+                }
+                .render()
+                .unwrap()
+            )
+        )
     } else {
         // register page
-        let page_template = PageTemplate { id };
-        Html(page_template.render().unwrap())
+        Ok(Html(PageTemplate { id: &id.to_string() }.render().unwrap()))
     }
 }
 
@@ -68,40 +77,49 @@ pub async fn submit_register(
     State(state): State<AppState>,
     Path(id): Path<String>,
     Form(register): Form<Register>,
-) -> impl IntoResponse {
-    let Some(invite) = state.db.invites.get(&id).await else {
+) -> Result<impl IntoResponse, ToastError> {
+    let Some(invite) = state.db.invites.get(&id).await? else {
         // invalid
         error!("invalid invite id {}", &id);
-        let invalid_template = ErrorTemplate {
-            error: RegisterError::Invalid,
-        };
-        return Html(invalid_template.render().unwrap()).into_response();
+        return Ok(
+            Html(
+                ErrorTemplate {
+                    message: "This invite link is invalid. Contact an admin if you would like to register."
+                }
+                .render()
+                .unwrap()
+            ).into_response()
+        );
     };
 
     if invite.is_expired() {
-        // expired
         error!("invite expired {}", &id);
-        let expired_template = ErrorTemplate {
-            error: RegisterError::Expired,
-        };
-        return Html(expired_template.render().unwrap()).into_response();
+        return Ok(
+            Html(
+                ErrorTemplate {
+                    message: "This invite link has expired. Contact an admin if you would like to register."
+                }
+                .render()
+                .unwrap()
+            ).into_response()
+        );
     }
 
-    if state.db.users.get(&register.email).await.is_some() {
+    if state.db.users.get(&register.email).await?.is_some() {
         // register page with account already exists warning
         error!("user tried registering with account that already exists");
-        return Html(PageEmailTakenTemplate.render().unwrap()).into_response();
+        return Ok(Html(PageEmailTakenTemplate.render().unwrap()).into_response());
     }
 
     // create new user
-    state.db.users.insert(&register.email).await;
+    state.db.users.insert(&register.email).await?;
 
     // delete invite
-    state.db.invites.delete(&id).await;
+    state.db.invites.delete(&id).await?;
 
     info!("{} registered", &register.email);
 
-    let admins = state.db.users.get_admins().await;
+    let admins = state.db.users.get_admins().await?;
 
     if !admins.is_empty()
         && let Err(e) = RegisterAlertEmail::send(&register.email, admins).await
@@ -110,7 +128,7 @@ pub async fn submit_register(
     }
 
     // redirect to ok page
-    ([("HX-Redirect", "/register/ok")], "").into_response()
+    Ok(([("HX-Redirect", "/register/ok")], "").into_response())
 }
 
 pub async fn register_ok_page() -> Html<String> {
