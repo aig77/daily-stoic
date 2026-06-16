@@ -70,7 +70,8 @@ impl FromRequestParts<AppState> for AdminUser {
             return Err(AdminRejection::Expired);
         };
 
-        if let Some(user) = state.db.users.get(&email).await
+        // db errors are treated as forbidden - can't verify admin status without a db
+        if let Ok(Some(user)) = state.db.users.get(&email).await
             && user.is_admin == 1
         {
             Ok(AdminUser { email })
