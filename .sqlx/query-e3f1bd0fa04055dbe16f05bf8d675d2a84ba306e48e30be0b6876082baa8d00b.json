@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "UPDATE users SET send_time = ?1, timezone = ?2 WHERE email = ?3",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 3
+    },
+    "nullable": []
+  },
+  "hash": "e3f1bd0fa04055dbe16f05bf8d675d2a84ba306e48e30be0b6876082baa8d00b"
+}

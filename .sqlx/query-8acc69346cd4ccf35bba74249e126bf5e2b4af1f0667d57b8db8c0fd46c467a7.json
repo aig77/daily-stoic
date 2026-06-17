@@ -1,0 +1,26 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT email FROM users WHERE is_admin = 1",
+  "describe": {
+    "columns": [
+      {
+        "name": "email",
+        "ordinal": 0,
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "users",
+            "name": "email"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Right": 0
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "8acc69346cd4ccf35bba74249e126bf5e2b4af1f0667d57b8db8c0fd46c467a7"
+}
