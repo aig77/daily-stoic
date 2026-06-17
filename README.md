@@ -40,9 +40,8 @@ The migrate binary reads from `DATABASE_JSON_PATH` (defaults to `/var/lib/daily-
 - [x] Notification email to admins when a new user signs up
 - [x] Title and monthly theme are flipped positionally in template
 - [x] Add limit to number of times people can change the schedule to 3/day
-- [ ] API key custom extractor for quote endpoints
+- [x] API key custom extractor for quote endpoints
 - [x] Define `AppError` type implementing `IntoResponse` for 500 responses
 - [x] Return `Result` from all database functions instead of panicking
 - [x] Handle db errors in handlers with `?`
 - [x] Handle remaining unwraps in middleware and auth extractor
-- [ ] Captcha after clicking login
