@@ -32,11 +32,19 @@ pub fn configure() -> Router<AppState> {
         .route("/session-expired", get(session_expired_page))
         .route(
             "/login/verify",
-            post(verify_login_code).route_layer(rate_limiter(10, HOUR, "Too many attempts. Please try again later.")),
+            post(verify_login_code).route_layer(rate_limiter(
+                10,
+                HOUR,
+                "Too many attempts. Please try again later.",
+            )),
         )
         .route(
             "/login/resend",
-            post(resend_login_code).route_layer(rate_limiter(3, HOUR, "You can only resend 3 times per hour. Please try again later.")),
+            post(resend_login_code).route_layer(rate_limiter(
+                3,
+                HOUR,
+                "You can only resend 3 times per hour. Please try again later.",
+            )),
         )
         .route("/register/{id}", get(register_page).post(submit_register))
         .route("/register/ok", get(register_ok_page))
@@ -46,9 +54,9 @@ pub fn configure() -> Router<AppState> {
         .route("/settings/delete", post(delete_user))
         .route("/settings/delete-confirm", get(delete_confirm_form))
         .route("/settings/invite", post(generate_invite_link))
-        .route("/quote/{id}", get(get_quote_by_id))
         .route("/quote/daily", get(get_daily_quote))
         .route("/quote/random", get(get_random_quote))
+        .route("/quote/{id}", get(get_quote_by_id))
         .layer(
             ServiceBuilder::new()
                 .layer(CorsLayer::permissive())

@@ -5,7 +5,6 @@ use resend_rs::{
     types::CreateEmailBaseOptions,
     {Resend, Result},
 };
-use tracing::info;
 
 const EMOJIS: [&str; 10] = ["📚", "📖", "✨", "💭", "🧠", "🎯", "🔥", "🌟", "🏛️", "🌊"];
 
@@ -87,8 +86,7 @@ impl LoginCodeEmail {
 }
 
 fn get_from() -> String {
-    std::env::var("RESEND_EMAIL")
-        .expect("Required env var RESEND_EMAIL")
+    std::env::var("RESEND_EMAIL").expect("Required env var RESEND_EMAIL")
 }
 
 fn get_random_emoji() -> &'static str {
@@ -121,7 +119,6 @@ impl RegisterAlertEmail {
 }
 
 pub fn check_env_vars() {
-    let key = std::env::var("RESEND_API_KEY").expect("Missing required env var RESEND_API_KEY");
+    std::env::var("RESEND_API_KEY").expect("Missing required env var RESEND_API_KEY");
     std::env::var("RESEND_EMAIL").expect("Missing required env var RESEND_EMAIL");
-    info!("key={}", key);
 }

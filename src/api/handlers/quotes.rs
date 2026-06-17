@@ -1,17 +1,19 @@
+use crate::{
+    AppState,
+    api::middleware::api_key::ApiKey,
+    models::{DateId, Quote},
+};
+
 use axum::{
     Json,
     extract::{Path, State},
     http::StatusCode,
 };
 
-use crate::{
-    AppState,
-    models::{DateId, Quote},
-};
-
 pub async fn get_quote_by_id(
     State(state): State<AppState>,
     Path(id): Path<DateId>,
+    _: ApiKey,
 ) -> Result<Json<Quote>, StatusCode> {
     state
         .db
@@ -23,7 +25,10 @@ pub async fn get_quote_by_id(
         .ok_or(StatusCode::NOT_FOUND)
 }
 
-pub async fn get_daily_quote(State(state): State<AppState>) -> Result<Json<Quote>, StatusCode> {
+pub async fn get_daily_quote(
+    State(state): State<AppState>,
+    _: ApiKey,
+) -> Result<Json<Quote>, StatusCode> {
     state
         .db
         .quotes
@@ -34,7 +39,10 @@ pub async fn get_daily_quote(State(state): State<AppState>) -> Result<Json<Quote
         .ok_or(StatusCode::NOT_FOUND)
 }
 
-pub async fn get_random_quote(State(state): State<AppState>) -> Result<Json<Quote>, StatusCode> {
+pub async fn get_random_quote(
+    State(state): State<AppState>,
+    _: ApiKey,
+) -> Result<Json<Quote>, StatusCode> {
     state
         .db
         .quotes
