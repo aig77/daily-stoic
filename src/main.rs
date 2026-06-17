@@ -1,14 +1,12 @@
-use std::sync::Arc;
-
+use chrono::Duration;
 use daily_stoic::{
-    AppState,
+    AppState, Budget,
     api::{configure, middleware::tracing::init_tracing},
     config::Config,
     database::Database,
     email::check_env_vars,
     schedule::init_email_scheduler,
 };
-use dashmap::DashMap;
 use std::net::SocketAddr;
 use tracing::info;
 
@@ -35,7 +33,9 @@ async fn main() {
     let state = AppState {
         config: config.clone(),
         db,
-        sends: Arc::new(DashMap::new()),
+        daily_sends: Budget::new(1, Duration::hours(24)),
+        random_sends: Budget::new(1, Duration::hours(24)),
+        schedule_changes: Budget::new(3, Duration::hours(24)),
     };
 
     init_email_scheduler(state.clone()).await.unwrap();

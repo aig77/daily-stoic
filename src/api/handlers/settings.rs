@@ -7,7 +7,6 @@ use crate::models::Invite;
 use askama::Template;
 use axum::{Form, extract::State, response::Html};
 use serde::Deserialize;
-use std::time::{Duration, Instant};
 use tracing::{error, info};
 
 #[derive(Deserialize)]
@@ -84,6 +83,50 @@ pub async fn settings_page(
     Ok(Html(template.render().unwrap()))
 }
 
+pub async fn save_settings(
+    State(state): State<AppState>,
+    auth: AuthUser,
+    Form(settings): Form<Settings>,
+) -> Result<Html<String>, ToastError> {
+    let emails_enabled = if settings.emails_enabled.is_some() {
+        1
+    } else {
+        0
+    };
+
+    state
+        .db
+        .users
+        .update_email_settings(&auth.email, emails_enabled)
+        .await?;
+
+    if state.schedule_changes.is_limited(&auth.email) {
+        error!(
+            "{} exceeded number of times schedule can be changed",
+            &auth.email
+        );
+        return Ok(Html(
+            WarningToast {
+                message: "Exceeded the number of times schedule can be changed. Try again later.",
+            }
+            .render()
+            .unwrap(),
+        ));
+    }
+
+    state
+        .db
+        .users
+        .update_schedule(
+            &auth.email,
+            &round_to_15_min(&settings.send_time),
+            &settings.timezone,
+        )
+        .await?;
+
+    Ok(Html(SaveOkTemplate.render().unwrap()))
+}
+
 fn round_to_15_min(time: &str) -> String {
     let Some((h, m)) = time.split_once(':') else {
         return time.to_string();
@@ -100,40 +143,17 @@ fn round_to_15_min(time: &str) -> String {
     format!("{:02}:{:02}", hours, minutes)
 }
 
-pub async fn save_settings(
-    State(state): State<AppState>,
-    auth: AuthUser,
-    Form(settings): Form<Settings>,
-) -> Result<Html<String>, ToastError> {
-    let emails_enabled = if settings.emails_enabled.is_some() {
-        1
-    } else {
-        0
-    };
-    state
-        .db
-        .users
-        .update(
-            &auth.email,
-            emails_enabled,
-            &round_to_15_min(&settings.send_time),
-            &settings.timezone,
-        )
-        .await?;
-    Ok(Html(SaveOkTemplate.render().unwrap()))
-}
-
 pub async fn send_daily(
     State(state): State<AppState>,
     auth: AuthUser,
 ) -> Result<Html<String>, ToastError> {
-    if is_send_rate_limited(&state, &auth.email) {
+    if state.daily_sends.is_limited(&auth.email) {
         error!(
             "{} exceeded number of times daily email can be sent",
             &auth.email
         );
         let toast = WarningToast {
-            message: "Exceeded number of times email can be sent.",
+            message: "Exceeded number of times email can be sent. Try again later.",
         };
         return Ok(Html(toast.render().unwrap()));
     }
@@ -165,13 +185,13 @@ pub async fn send_random(
     State(state): State<AppState>,
     auth: AuthUser,
 ) -> Result<Html<String>, ToastError> {
-    if is_send_rate_limited(&state, &auth.email) {
+    if state.random_sends.is_limited(&auth.email) {
         error!(
             "{} exceeded number of times random email can be sent",
             &auth.email
         );
         let toast = WarningToast {
-            message: "Exceeded number of times email can be sent.",
+            message: "Exceeded number of times email can be sent. Try again later.",
         };
         return Ok(Html(toast.render().unwrap()));
     }
@@ -197,26 +217,6 @@ pub async fn send_random(
         message: "Message sent!",
     };
     Ok(Html(toast.render().unwrap()))
-}
-
-fn is_send_rate_limited(state: &AppState, email: &str) -> bool {
-    let mut entry = state
-        .sends
-        .entry(email.to_string())
-        .or_insert((1, Instant::now()));
-
-    let (count, started) = &mut *entry;
-
-    if started.elapsed() >= Duration::from_secs(86400) {
-        *count = 1;
-        *started = Instant::now();
-    } else if *count > 3 {
-        return true;
-    } else {
-        *count += 1;
-    }
-
-    false
 }
 
 pub async fn generate_invite_link(

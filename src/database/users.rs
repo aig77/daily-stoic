@@ -25,19 +25,33 @@ impl UsersRepository {
         Ok(())
     }
 
-    pub async fn update(
+    pub async fn update_email_settings(
         &self,
         email: &str,
         emails_enabled: i64,
+    ) -> Result<(), sqlx::Error> {
+        sqlx::query!(
+            "UPDATE users SET emails_enabled = ?1 WHERE email = ?2",
+            emails_enabled,
+            email,
+        )
+        .execute(&self.pool)
+        .await?;
+
+        Ok(())
+    }
+
+    pub async fn update_schedule(
+        &self,
+        email: &str,
         send_time: &str,
         timezone: &str,
     ) -> Result<(), sqlx::Error> {
         sqlx::query!(
-            "UPDATE users SET emails_enabled = ?1, send_time = ?2, timezone = ?3 WHERE email = ?4",
-            emails_enabled,
+            "UPDATE users SET send_time = ?1, timezone = ?2 WHERE email = ?3",
             send_time,
             timezone,
-            email
+            email,
         )
         .execute(&self.pool)
         .await?;
