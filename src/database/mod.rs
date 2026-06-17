@@ -12,6 +12,7 @@ use users::UsersRepository;
 
 #[derive(Clone, Debug)]
 pub struct Database {
+    pub pool: SqlitePool,
     pub quotes: QuotesRepository,
     pub invites: InvitesRepository,
     pub users: UsersRepository,
@@ -25,6 +26,7 @@ impl Database {
             .create_if_missing(true);
         let pool = SqlitePool::connect_with(options).await.unwrap();
         Database {
+            pool: pool.clone(),
             quotes: QuotesRepository::new(pool.clone()),
             invites: InvitesRepository::new(pool.clone()),
             users: UsersRepository::new(pool.clone()),

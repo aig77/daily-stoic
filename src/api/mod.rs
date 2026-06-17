@@ -9,6 +9,7 @@ use axum::{
     routing::{get, post},
 };
 use handlers::{
+    health::health,
     login::{login_page, resend_login_code, session_expired_page, submit_login, verify_login_code},
     quotes::{get_daily_quote, get_quote_by_id, get_random_quote},
     register::{register_ok_page, register_page, submit_register},
@@ -27,6 +28,7 @@ const HOUR: Duration = Duration::from_secs(3600);
 
 pub fn configure() -> Router<AppState> {
     Router::new()
+        .route("/health", get(health))
         .route("/", get(|| async { Redirect::temporary("/login") }))
         .route("/login", get(login_page).post(submit_login))
         .route("/session-expired", get(session_expired_page))
