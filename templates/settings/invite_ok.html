@@ -1,2 +1,39 @@
-<small class="save-ok" onanimationend="this.remove()">&#x2713; Invite link copied to clipboard</small>
-<script>navigator.clipboard.writeText('{{ url }}')</script>
+<div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap">
+  <input type="text" id="invite-url" value="{{ url }}" readonly
+         style="margin: 0; font-size: 0.8rem; flex: 1; min-width: 0" />
+  <button type="button" onclick="copyInviteUrl()" style="width: auto; margin: 0; white-space: nowrap">
+    Copy
+  </button>
+</div>
+<small id="invite-copy-msg" style="display: none; margin-top: 0.25rem">&#x2713; Copied to clipboard</small>
+<script>
+(function () {
+  var urlInput = document.getElementById('invite-url');
+  var msg = document.getElementById('invite-copy-msg');
+
+  function showCopied() {
+    msg.className = 'save-ok';
+    msg.style.display = 'inline';
+    setTimeout(function () { msg.style.display = 'none'; }, 2500);
+  }
+
+  function fallbackCopy() {
+    urlInput.select();
+    urlInput.setSelectionRange(0, 99999);
+    try { document.execCommand('copy'); showCopied(); } catch (e) {}
+  }
+
+  window.copyInviteUrl = function () {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(urlInput.value).then(showCopied).catch(fallbackCopy);
+    } else {
+      fallbackCopy();
+    }
+  };
+
+  // Auto-copy on desktop (requires secure context; silently skipped on mobile)
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(urlInput.value).then(showCopied).catch(function () {});
+  }
+})();
+</script>
