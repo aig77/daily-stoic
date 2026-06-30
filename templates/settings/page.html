@@ -3,6 +3,40 @@
 {% block title %}Settings{% endblock %}
 
 {% block content %}
+<style>
+  .settings-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+  }
+  .settings-row label,
+  .settings-row > span {
+    margin: 0;
+    flex-shrink: 0;
+    padding-right: 1rem;
+  }
+  .settings-row input,
+  .settings-row select {
+    margin: 0;
+    width: auto;
+  }
+  @media (max-width: 480px) {
+    .settings-row {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.4rem;
+    }
+    .settings-row label,
+    .settings-row > span {
+      padding-right: 0;
+    }
+    .settings-row select,
+    .settings-row input[type="time"] {
+      width: 100%;
+    }
+  }
+</style>
 <div style="max-width: 640px; margin: 0 auto; padding: 1.5rem 1rem 0">
   <hgroup style="margin-bottom: 1.5rem">
     <h2>Settings</h2>
@@ -12,17 +46,17 @@
   <article>
     <header><strong>Email preferences</strong></header>
     <form hx-post="/settings" hx-target="#save-status" hx-swap="innerHTML">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem">
+      <div class="settings-row">
         <span>Receive daily emails</span>
         <input type="checkbox" role="switch" name="emails_enabled" {% if emails_enabled %}checked{% endif %} style="margin: 0; width: auto" />
       </div>
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem">
-        <label for="send_time_display" style="margin: 0">Send time</label>
-        <input type="time" id="send_time_display" step="900" style="margin: 0; width: auto" />
+      <div class="settings-row">
+        <label for="send_time_display">Send time</label>
+        <input type="time" id="send_time_display" step="900" />
       </div>
       <input type="hidden" id="send_time_utc" name="send_time" value="{{ send_time }}" />
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem">
-        <label for="timezone" style="margin: 0">Timezone</label>
+      <div class="settings-row">
+        <label for="timezone">Timezone</label>
         <select id="timezone" name="timezone" style="margin: 0; width: auto">
           <option value="America/New_York"     {% if timezone == "America/New_York"     %}selected{% endif %}>Eastern (ET)</option>
           <option value="America/Chicago"      {% if timezone == "America/Chicago"      %}selected{% endif %}>Central (CT)</option>
